@@ -37,8 +37,8 @@
     background: var(--paper);
     color: var(--ink);
     font-family: var(--serif);
-    font-size: 19px;
-    line-height: 1.5;
+    font-size: 21px;
+    line-height: 1.55;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -47,9 +47,9 @@
      Layout: header, main 3-column grid, footer
      ─────────────────────────────────────────────────────────── */
   .page {
-    max-width: 820px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 56px 32px 96px;
+    padding: 48px 32px 96px;
   }
 
   header.masthead {
@@ -162,139 +162,185 @@
   .stickycount a:hover { color: var(--accent); border-bottom-color: var(--accent-soft); }
 
   /* ────────────────────────────────────────────────────────────
-     Filter panel
+     Filter panel — three columns at the top of the page,
+     accordion style: only one column open at a time, the others
+     show their selected filters as compact summaries below the title.
      ─────────────────────────────────────────────────────────── */
   .filters {
-    font-size: 17.7px;
     margin-bottom: 56px;
   }
-  .filters .layer {
-    margin-bottom: 32px;
+  .filter-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 24px;
+    align-items: start;
   }
-  .filters .layer-title {
+  @media (max-width: 900px) {
+    .filter-columns { grid-template-columns: 1fr; }
+  }
+
+  .filter-column {
+    border-top: 2px solid var(--line);
+    padding-top: 12px;
+  }
+
+  .filter-column .col-title {
     font-family: var(--display);
     font-weight: 700;
-    font-size: 15.3px;
+    font-size: 17px;
     text-transform: uppercase;
-    letter-spacing: 0.18em;
-    color: var(--ink-soft);
-    border-bottom: 1px solid var(--line);
-    padding-bottom: 6px;
-    margin-bottom: 16px;
+    letter-spacing: 0.14em;
+    color: var(--ink);
+    cursor: pointer;
     display: flex;
     align-items: baseline;
     justify-content: space-between;
+    user-select: none;
+    padding: 4px 0;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    font-family: var(--display);
   }
-  .filters .layer-title .layer-num {
+  .filter-column .col-title:hover { color: var(--accent); }
+  .filter-column .col-title .chevron {
     font-family: var(--mono);
     font-weight: 400;
+    font-size: 14px;
     color: var(--ink-faint);
-    font-size: 13px;
-    letter-spacing: 0.05em;
+    transition: transform 200ms;
+  }
+  .filter-column.open .col-title .chevron {
+    transform: rotate(180deg);
+    color: var(--accent);
   }
 
-  .filters .descriptor {
-    margin-bottom: 14px;
+  .filter-column .summary {
+    margin-top: 8px;
+    font-size: 15px;
+    color: var(--ink-soft);
+    line-height: 1.45;
   }
-  .filters .descriptor-label {
+  .filter-column .summary .empty {
+    color: var(--ink-faint);
+    font-style: italic;
+    font-size: 14px;
+  }
+  .filter-column .summary .chosen {
+    display: block;
+    padding: 3px 0;
+  }
+  .filter-column .summary .chosen .desc {
+    font-style: italic;
+  }
+  .filter-column .summary .chosen .val {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    margin-left: 6px;
+  }
+  .filter-column .summary .chosen .val.exclude { color: var(--accent); }
+
+  .filter-column .panel {
+    display: none;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line-soft);
+  }
+  .filter-column.open .panel { display: block; }
+
+  .filter-column .descriptor-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .filter-column .descriptor-row:last-child { border-bottom: none; }
+  .filter-column .descriptor-row .desc-name {
     font-style: italic;
     color: var(--ink-soft);
-    font-size: 15.3px;
-    margin-bottom: 4px;
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
+    font-size: 16px;
+    line-height: 1.3;
   }
-  .filters .descriptor-label .reset {
-    cursor: pointer;
+  .filter-column .descriptor-row .desc-name .count {
+    font-family: var(--mono);
+    font-size: 12px;
     color: var(--ink-faint);
-    font-size: 13px;
-    font-family: var(--mono);
-    text-decoration: none;
-    border: none;
-    background: none;
-    padding: 0;
+    font-style: normal;
+    margin-left: 4px;
   }
-  .filters .descriptor-label .reset:hover { color: var(--accent); }
-  .filters .descriptor-label .reset.hidden { visibility: hidden; }
-
-  /* Three-state radio group: must / not / any */
-  .tristate {
+  .filter-column .descriptor-row .controls {
     display: flex;
-    gap: 0;
+    gap: 4px;
+  }
+  .filter-column .descriptor-row .controls button {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.04em;
     border: 1px solid var(--line);
     border-radius: 999px;
-    overflow: hidden;
-    width: fit-content;
-    background: var(--paper);
-  }
-  .tristate label {
-    padding: 4px 12px;
-    cursor: pointer;
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.03em;
-    color: var(--ink-soft);
-    border-right: 1px solid var(--line-soft);
-    transition: background 120ms, color 120ms;
-    user-select: none;
-  }
-  .tristate label:last-child { border-right: none; }
-  .tristate input { display: none; }
-  .tristate label:hover { background: var(--paper-soft); }
-  .tristate input:checked + span {
-    background: var(--ink);
-    color: var(--paper);
-  }
-  .tristate label:has(input:checked) {
-    background: var(--ink);
-    color: var(--paper);
-  }
-  .tristate label.exclude:has(input:checked) {
-    background: var(--accent);
-    color: var(--paper);
-  }
-
-  /* Pill checkboxes (multi-select OR within a dimension) */
-  .pillgroup {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  .pillgroup label {
-    padding: 4px 11px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    font-size: 14.2px;
-    font-family: var(--mono);
-    letter-spacing: 0.02em;
-    cursor: pointer;
+    padding: 3px 9px;
     background: var(--paper);
     color: var(--ink);
+    cursor: pointer;
     transition: all 120ms;
-    user-select: none;
-    line-height: 1.2;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
+    white-space: nowrap;
   }
-  .pillgroup label .count {
-    font-size: 11.8px;
-    color: var(--ink-faint);
+  .filter-column .descriptor-row .controls button:hover {
+    background: var(--paper-soft);
   }
-  .pillgroup label:has(input:checked) {
+  .filter-column .descriptor-row .controls button.must.selected {
     background: var(--ink);
     color: var(--paper);
+    border-color: var(--ink);
   }
-  .pillgroup label:has(input:checked) .count { color: var(--paper); opacity: 0.65; }
-  .pillgroup label.disabled {
+  .filter-column .descriptor-row .controls button.mustnot.selected {
+    background: var(--accent);
+    color: var(--paper);
+    border-color: var(--accent);
+  }
+  .filter-column .descriptor-row .controls button.disabled {
     color: var(--disabled);
     border-color: var(--disabled);
     cursor: not-allowed;
     background: transparent;
   }
-  .pillgroup label.disabled .count { color: var(--disabled); }
-  .pillgroup label input { display: none; }
+
+  .filter-column .pill-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    grid-column: 1 / -1;
+    margin-top: 4px;
+  }
+  .filter-column .pill-options button {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.02em;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 9px;
+    background: var(--paper);
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 120ms;
+  }
+  .filter-column .pill-options button.selected {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .filter-column .pill-options button:hover { background: var(--paper-soft); }
+  .filter-column .pill-options button.selected:hover { background: var(--ink); }
+  .filter-column .pill-options button.disabled {
+    color: var(--disabled);
+    border-color: var(--disabled);
+    cursor: not-allowed;
+    background: transparent;
+  }
 
   /* ────────────────────────────────────────────────────────────
      Results pane
@@ -654,7 +700,8 @@ const RANKS = {
 const state = {
   layer1: {},      // { facet_key: Set of selected option values }
   layer2: {},      // { descriptor_key: 'must' | 'must-not' | undefined }
-  layer3: {}       // { facet_key: Set of selected option values, or single value for min-rank }
+  layer3: {},      // { facet_key: Set of selected option values, or single value for min-rank }
+  openColumn: null // 'l1' | 'l2' | 'l3' | null
 };
 
 /* ════════════════════════════════════════════════════════════════════
@@ -821,101 +868,172 @@ function renderFilters() {
   const root = document.getElementById('filters');
   root.innerHTML = '';
 
-  // ── Layer 1 ───────────────────────────────────────────────────
-  const l1 = document.createElement('div');
-  l1.className = 'layer';
-  l1.innerHTML = '<div class="layer-title"><span>Stance &amp; profile</span><span class="layer-num">layer 1</span></div>';
+  const grid = document.createElement('div');
+  grid.className = 'filter-columns';
+
+  // ── Three columns: L1 stance & profile · L2 commitments · L3 tooling ──
+  grid.appendChild(renderColumn('l1', 'Stance & Profile', renderL1Panel.bind(null, counts), renderL1Summary));
+  grid.appendChild(renderColumn('l2', 'Categorial Commitments', renderL2Panel, renderL2Summary));
+  grid.appendChild(renderColumn('l3', 'Practical & Tooling', renderL3Panel.bind(null, counts), renderL3Summary));
+
+  root.appendChild(grid);
+}
+
+function renderColumn(id, title, renderPanel, renderSummary) {
+  const col = document.createElement('div');
+  col.className = 'filter-column' + (state.openColumn === id ? ' open' : '');
+
+  // Title bar (clickable to open/close)
+  const titleEl = document.createElement('button');
+  titleEl.className = 'col-title';
+  titleEl.dataset.col = id;
+  titleEl.dataset.action = 'toggle-col';
+  titleEl.innerHTML = `<span>${title}</span><span class="chevron">&#9662;</span>`;
+  col.appendChild(titleEl);
+
+  // Summary (when closed) — shows what's currently chosen in this column
+  if (state.openColumn !== id) {
+    const summary = document.createElement('div');
+    summary.className = 'summary';
+    const summaryHTML = renderSummary();
+    summary.innerHTML = summaryHTML || '<span class="empty">no filters chosen</span>';
+    col.appendChild(summary);
+  }
+
+  // Panel (when open) — the descriptor rows with their controls
+  const panel = document.createElement('div');
+  panel.className = 'panel';
+  if (state.openColumn === id) {
+    renderPanel(panel);
+  }
+  col.appendChild(panel);
+
+  return col;
+}
+
+// ── L1: Stance & Profile (4 facets, each with multi-pill options) ────
+function renderL1Panel(counts, panel) {
   for (const facet of LAYER1_FACETS) {
     const sel = state.layer1[facet.key] || new Set();
-    const desc = document.createElement('div');
-    desc.className = 'descriptor';
-    const showReset = sel.size > 0 ? '' : 'hidden';
-    desc.innerHTML = `<div class="descriptor-label"><span>${facet.label}</span>
-      <button class="reset ${showReset}" data-action="reset-l1" data-key="${facet.key}">clear</button></div>`;
-    const group = document.createElement('div');
-    group.className = 'pillgroup';
-    facet.options.forEach((opt, i) => {
-      const label = (facet.optionLabels && facet.optionLabels[i]) || String(opt);
-      const lbl = document.createElement('label');
+    const row = document.createElement('div');
+    row.className = 'descriptor-row';
+    row.innerHTML = `<div class="desc-name">${facet.label}</div><div></div>`;
+    const opts = document.createElement('div');
+    opts.className = 'pill-options';
+    facet.options.forEach((opt, idx) => {
+      const label = (facet.optionLabels && facet.optionLabels[idx]) || String(opt);
+      const isSel = sel.has(opt);
       const count = counts.layer1[facet.key][String(opt)];
-      const isSelected = sel.has(opt);
-      const wouldEmpty = count === 0;
-      lbl.className = (wouldEmpty && !isSelected) ? 'disabled' : '';
-      lbl.innerHTML = `<input type="checkbox" data-layer="1" data-key="${facet.key}"
-                          data-opt="${escapeAttr(opt)}" ${isSelected ? 'checked' : ''}
-                          ${wouldEmpty && !isSelected ? 'disabled' : ''}>
-                       <span>${label}</span>
-                       <span class="count">${count}</span>`;
-      group.appendChild(lbl);
+      const disabled = count === 0 && !isSel;
+      const btn = document.createElement('button');
+      btn.className = (isSel ? 'selected' : '') + (disabled ? ' disabled' : '');
+      btn.dataset.action = 'l1-toggle';
+      btn.dataset.key = facet.key;
+      btn.dataset.opt = String(opt);
+      if (disabled) btn.disabled = true;
+      btn.innerHTML = `${label} <span style="opacity:0.6;font-size:10.5px">${count}</span>`;
+      opts.appendChild(btn);
     });
-    desc.appendChild(group);
-    l1.appendChild(desc);
+    row.appendChild(opts);
+    panel.appendChild(row);
   }
-  root.appendChild(l1);
+}
 
-  // ── Layer 2 ───────────────────────────────────────────────────
-  const l2 = document.createElement('div');
-  l2.className = 'layer';
-  l2.innerHTML = '<div class="layer-title"><span>Categorial commitments</span><span class="layer-num">layer 2</span></div>';
+function renderL1Summary() {
+  const lines = [];
+  for (const facet of LAYER1_FACETS) {
+    const sel = state.layer1[facet.key];
+    if (sel && sel.size > 0) {
+      for (const opt of sel) {
+        const idx = facet.options.indexOf(opt);
+        const label = (facet.optionLabels && facet.optionLabels[idx]) || String(opt);
+        lines.push(`<span class="chosen"><span class="desc">${facet.label}:</span><span class="val">${label}</span></span>`);
+      }
+    }
+  }
+  return lines.join('');
+}
+
+// ── L2: Categorial Commitments (15 descriptors, each with must/must-not) ─
+function renderL2Panel(panel) {
   for (const [key, label] of LAYER2_DESCRIPTORS) {
-    const cur = state.layer2[key];   // 'must' | 'must-not' | undefined
-    const desc = document.createElement('div');
-    desc.className = 'descriptor';
-    const showReset = cur ? '' : 'hidden';
-    desc.innerHTML = `<div class="descriptor-label"><span>${label}</span>
-      <button class="reset ${showReset}" data-action="reset-l2" data-key="${key}">clear</button></div>`;
-    const tri = document.createElement('div');
-    tri.className = 'tristate';
-    tri.innerHTML = `
-      <label class="must"><input type="radio" name="l2-${key}" data-layer="2" data-key="${key}" data-val="must"     ${cur==='must'    ?'checked':''}><span>must admit</span></label>
-      <label class="exclude"><input type="radio" name="l2-${key}" data-layer="2" data-key="${key}" data-val="must-not" ${cur==='must-not'?'checked':''}><span>must not</span></label>
-      <label class="any"><input type="radio" name="l2-${key}" data-layer="2" data-key="${key}" data-val="any"      ${!cur            ?'checked':''}><span>don't care</span></label>
+    const cur = state.layer2[key]; // 'must' | 'must-not' | undefined
+    const row = document.createElement('div');
+    row.className = 'descriptor-row';
+    row.innerHTML = `
+      <div class="desc-name">${label}</div>
+      <div class="controls">
+        <button class="must ${cur === 'must' ? 'selected' : ''}" data-action="l2-set" data-key="${key}" data-val="must">must admit</button>
+        <button class="mustnot ${cur === 'must-not' ? 'selected' : ''}" data-action="l2-set" data-key="${key}" data-val="must-not">must not</button>
+      </div>
     `;
-    desc.appendChild(tri);
-    l2.appendChild(desc);
+    panel.appendChild(row);
   }
-  root.appendChild(l2);
+}
 
-  // ── Layer 3 ───────────────────────────────────────────────────
-  const l3 = document.createElement('div');
-  l3.className = 'layer';
-  l3.innerHTML = '<div class="layer-title"><span>Practical &amp; tooling</span><span class="layer-num">layer 3</span></div>';
+function renderL2Summary() {
+  const lines = [];
+  const labels = Object.fromEntries(LAYER2_DESCRIPTORS);
+  for (const [key, _] of LAYER2_DESCRIPTORS) {
+    const cur = state.layer2[key];
+    if (cur === 'must') {
+      lines.push(`<span class="chosen"><span class="desc">${labels[key]}:</span><span class="val">must admit</span></span>`);
+    } else if (cur === 'must-not') {
+      lines.push(`<span class="chosen"><span class="desc">${labels[key]}:</span><span class="val exclude">must not admit</span></span>`);
+    }
+  }
+  return lines.join('');
+}
+
+// ── L3: Practical & Tooling (6 facets, mixed types) ─────────────────
+function renderL3Panel(counts, panel) {
   for (const facet of LAYER3_FACETS) {
     const sel = state.layer3[facet.key];
-    const desc = document.createElement('div');
-    desc.className = 'descriptor';
-    const hasSel = (sel instanceof Set && sel.size > 0) || (typeof sel === 'string' && sel);
-    const showReset = hasSel ? '' : 'hidden';
-    desc.innerHTML = `<div class="descriptor-label"><span>${facet.label}</span>
-      <button class="reset ${showReset}" data-action="reset-l3" data-key="${facet.key}">clear</button></div>`;
-    const group = document.createElement('div');
-    group.className = 'pillgroup';
-    facet.options.forEach((opt, i) => {
-      const label = (facet.optionLabels && facet.optionLabels[i]) || String(opt);
-      const lbl = document.createElement('label');
-      const count = counts.layer3[facet.key][String(opt)];
-      let isSelected;
+    const row = document.createElement('div');
+    row.className = 'descriptor-row';
+    row.innerHTML = `<div class="desc-name">${facet.label}</div><div></div>`;
+    const opts = document.createElement('div');
+    opts.className = 'pill-options';
+    facet.options.forEach((opt, idx) => {
+      const label = (facet.optionLabels && facet.optionLabels[idx]) || String(opt);
+      let isSel;
       if (facet.type === 'min-rank') {
-        isSelected = (sel === opt);
+        isSel = (sel === opt);
       } else {
-        isSelected = (sel instanceof Set) && sel.has(opt);
+        isSel = (sel instanceof Set) && sel.has(opt);
       }
-      const wouldEmpty = count === 0;
-      lbl.className = (wouldEmpty && !isSelected) ? 'disabled' : '';
-      const inputType = facet.type === 'min-rank' ? 'radio' : 'checkbox';
-      const inputName = facet.type === 'min-rank' ? `name="l3-${facet.key}"` : '';
-      lbl.innerHTML = `<input type="${inputType}" ${inputName} data-layer="3" data-key="${facet.key}"
-                          data-opt="${escapeAttr(opt)}" data-type="${facet.type}"
-                          ${isSelected ? 'checked' : ''}
-                          ${wouldEmpty && !isSelected ? 'disabled' : ''}>
-                       <span>${label}</span>
-                       <span class="count">${count}</span>`;
-      group.appendChild(lbl);
+      const count = counts.layer3[facet.key][String(opt)];
+      const disabled = count === 0 && !isSel;
+      const btn = document.createElement('button');
+      btn.className = (isSel ? 'selected' : '') + (disabled ? ' disabled' : '');
+      btn.dataset.action = 'l3-toggle';
+      btn.dataset.key = facet.key;
+      btn.dataset.opt = String(opt);
+      btn.dataset.type = facet.type;
+      if (disabled) btn.disabled = true;
+      btn.innerHTML = `${label} <span style="opacity:0.6;font-size:10.5px">${count}</span>`;
+      opts.appendChild(btn);
     });
-    desc.appendChild(group);
-    l3.appendChild(desc);
+    row.appendChild(opts);
+    panel.appendChild(row);
   }
-  root.appendChild(l3);
+}
+
+function renderL3Summary() {
+  const lines = [];
+  for (const facet of LAYER3_FACETS) {
+    const sel = state.layer3[facet.key];
+    if (sel instanceof Set && sel.size > 0) {
+      for (const opt of sel) {
+        const idx = facet.options.indexOf(opt);
+        const label = (facet.optionLabels && facet.optionLabels[idx]) || String(opt);
+        lines.push(`<span class="chosen"><span class="desc">${facet.label}:</span><span class="val">${label}</span></span>`);
+      }
+    } else if (typeof sel === 'string') {
+      lines.push(`<span class="chosen"><span class="desc">${facet.label}:</span><span class="val">&ge; ${sel}</span></span>`);
+    }
+  }
+  return lines.join('');
 }
 
 function renderActiveFilters() {
@@ -1109,49 +1227,61 @@ function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
    EVENT WIRING
    ════════════════════════════════════════════════════════════════════ */
 
-document.body.addEventListener('change', (e) => {
-  const t = e.target;
-  if (!(t instanceof HTMLInputElement)) return;
-  const layer = t.dataset.layer;
-  const key   = t.dataset.key;
-  const opt   = t.dataset.opt;
+document.body.addEventListener('click', (e) => {
+  // Walk up to find the nearest element with data-action
+  let t = e.target;
+  while (t && t !== document.body && !(t.dataset && t.dataset.action)) {
+    t = t.parentElement;
+  }
+  if (!t || !t.dataset || !t.dataset.action) return;
 
-  if (layer === '1') {
+  const action = t.dataset.action;
+  const key    = t.dataset.key;
+  const opt    = t.dataset.opt;
+
+  if (action === 'toggle-col') {
+    const colId = t.dataset.col;
+    state.openColumn = (state.openColumn === colId) ? null : colId;
+    render();
+    return;
+  }
+
+  if (action === 'l1-toggle') {
     if (!state.layer1[key]) state.layer1[key] = new Set();
-    // Convert string back to original type (true / false / string)
     const realOpt = (opt === 'true') ? true : (opt === 'false' ? false : opt);
-    if (t.checked) state.layer1[key].add(realOpt);
-    else           state.layer1[key].delete(realOpt);
+    if (state.layer1[key].has(realOpt)) state.layer1[key].delete(realOpt);
+    else state.layer1[key].add(realOpt);
     if (state.layer1[key].size === 0) delete state.layer1[key];
-  } else if (layer === '2') {
+    render();
+    return;
+  }
+
+  if (action === 'l2-set') {
     const val = t.dataset.val;
-    if (val === 'any') delete state.layer2[key];
+    // If clicking the already-selected value, deselect it
+    if (state.layer2[key] === val) delete state.layer2[key];
     else state.layer2[key] = val;
-  } else if (layer === '3') {
+    render();
+    return;
+  }
+
+  if (action === 'l3-toggle') {
     const type = t.dataset.type;
     if (type === 'min-rank') {
-      state.layer3[key] = opt;
+      // Click same value to toggle off, otherwise set
+      if (state.layer3[key] === opt) delete state.layer3[key];
+      else state.layer3[key] = opt;
     } else {
-      if (!state.layer3[key] || !(state.layer3[key] instanceof Set)) state.layer3[key] = new Set();
+      if (!state.layer3[key] || !(state.layer3[key] instanceof Set)) {
+        state.layer3[key] = new Set();
+      }
       const realOpt = (opt === 'true') ? true : (opt === 'false' ? false : opt);
-      if (t.checked) state.layer3[key].add(realOpt);
-      else           state.layer3[key].delete(realOpt);
+      if (state.layer3[key].has(realOpt)) state.layer3[key].delete(realOpt);
+      else state.layer3[key].add(realOpt);
       if (state.layer3[key].size === 0) delete state.layer3[key];
     }
-  }
-  render();
-});
-
-document.body.addEventListener('click', (e) => {
-  const t = e.target;
-  if (t.dataset && t.dataset.action) {
-    if (t.dataset.action === 'reset-l1') {
-      delete state.layer1[t.dataset.key]; render();
-    } else if (t.dataset.action === 'reset-l2') {
-      delete state.layer2[t.dataset.key]; render();
-    } else if (t.dataset.action === 'reset-l3') {
-      delete state.layer3[t.dataset.key]; render();
-    }
+    render();
+    return;
   }
 });
 
