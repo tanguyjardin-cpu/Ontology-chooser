@@ -1,0 +1,1195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ontology chooser — 14 categorial schemes</title>
+
+<!-- Fonts: editorial serif + restrained mono for codes/counts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Fraunces:opsz,wght@9..144,500;9..144,700&display=swap" rel="stylesheet">
+
+<style>
+  /* ────────────────────────────────────────────────────────────
+     Design tokens
+     ─────────────────────────────────────────────────────────── */
+  :root {
+    --ink:          #14110f;
+    --ink-soft:     #3a342f;
+    --ink-faint:    #7a716a;
+    --paper:        #f4efe6;
+    --paper-soft:   #ece5d8;
+    --line:         #14110f;
+    --line-soft:    #c5b9a3;
+    --accent:       #8b1f1f;          /* oxblood for chosen filters & live counts */
+    --accent-soft:  #c08a8a;
+    --disabled:     #b8aea0;
+    --serif:        'EB Garamond', 'Hoefler Text', Georgia, serif;
+    --display:      'Fraunces', 'EB Garamond', Georgia, serif;
+    --mono:         'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.45;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* ────────────────────────────────────────────────────────────
+     Layout: header, main 3-column grid, footer
+     ─────────────────────────────────────────────────────────── */
+  .page {
+    max-width: 1380px;
+    margin: 0 auto;
+    padding: 48px 40px 80px;
+  }
+
+  header.masthead {
+    border-bottom: 1.5px solid var(--line);
+    padding-bottom: 28px;
+    margin-bottom: 36px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 32px;
+  }
+  header.masthead h1 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 1.05;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  header.masthead .subtitle {
+    font-style: italic;
+    color: var(--ink-soft);
+    margin-top: 6px;
+    font-size: 18px;
+  }
+  header.masthead .meta {
+    text-align: right;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.04em;
+    line-height: 1.7;
+  }
+  header.masthead .meta a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+  header.masthead .meta a:hover { border-bottom-color: var(--accent); }
+
+  /* The active-filters strip just below the header */
+  .activefilters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 10px 14px;
+    padding: 14px 0 22px;
+    border-bottom: 1px dashed var(--line-soft);
+    margin-bottom: 28px;
+    min-height: 62px;
+  }
+  .activefilters .label {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 14px;
+    margin-right: 6px;
+  }
+  .activefilters .empty {
+    color: var(--ink-faint);
+    font-style: italic;
+    font-size: 14px;
+  }
+  .activefilters .resultcount {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+  .activefilters .resultcount strong {
+    color: var(--accent);
+    font-size: 22px;
+    font-weight: 500;
+    font-family: var(--display);
+    margin-right: 4px;
+  }
+
+  /* Main 3-column grid: filters | results | filters */
+  /* Actually we use filters-left + results-right, with all 3 layers stacked on the left. */
+  /* Reasoning: putting all filters in one column keeps them as a coherent unit, lets
+     the result list have full reading width, and is more compact on narrow screens. */
+  .grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 56px;
+  }
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; gap: 32px; }
+  }
+
+  /* ────────────────────────────────────────────────────────────
+     Filter panel
+     ─────────────────────────────────────────────────────────── */
+  .filters {
+    font-size: 15px;
+  }
+  .filters .layer {
+    margin-bottom: 36px;
+  }
+  .filters .layer-title {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 6px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .filters .layer-title .layer-num {
+    font-family: var(--mono);
+    font-weight: 400;
+    color: var(--ink-faint);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+
+  .filters .descriptor {
+    margin-bottom: 14px;
+  }
+  .filters .descriptor-label {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 13px;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .filters .descriptor-label .reset {
+    cursor: pointer;
+    color: var(--ink-faint);
+    font-size: 11px;
+    font-family: var(--mono);
+    text-decoration: none;
+    border: none;
+    background: none;
+    padding: 0;
+  }
+  .filters .descriptor-label .reset:hover { color: var(--accent); }
+  .filters .descriptor-label .reset.hidden { visibility: hidden; }
+
+  /* Three-state radio group: must / not / any */
+  .tristate {
+    display: flex;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    width: fit-content;
+    background: var(--paper);
+  }
+  .tristate label {
+    padding: 4px 12px;
+    cursor: pointer;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: var(--ink-soft);
+    border-right: 1px solid var(--line-soft);
+    transition: background 120ms, color 120ms;
+    user-select: none;
+  }
+  .tristate label:last-child { border-right: none; }
+  .tristate input { display: none; }
+  .tristate label:hover { background: var(--paper-soft); }
+  .tristate input:checked + span {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .tristate label:has(input:checked) {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .tristate label.exclude:has(input:checked) {
+    background: var(--accent);
+    color: var(--paper);
+  }
+
+  /* Pill checkboxes (multi-select OR within a dimension) */
+  .pillgroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .pillgroup label {
+    padding: 4px 11px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-size: 12px;
+    font-family: var(--mono);
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    background: var(--paper);
+    color: var(--ink);
+    transition: all 120ms;
+    user-select: none;
+    line-height: 1.2;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .pillgroup label .count {
+    font-size: 10px;
+    color: var(--ink-faint);
+  }
+  .pillgroup label:has(input:checked) {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .pillgroup label:has(input:checked) .count { color: var(--paper); opacity: 0.65; }
+  .pillgroup label.disabled {
+    color: var(--disabled);
+    border-color: var(--disabled);
+    cursor: not-allowed;
+    background: transparent;
+  }
+  .pillgroup label.disabled .count { color: var(--disabled); }
+  .pillgroup label input { display: none; }
+
+  /* ────────────────────────────────────────────────────────────
+     Results pane
+     ─────────────────────────────────────────────────────────── */
+  .results {
+    border-left: none;
+  }
+  .results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .ontology-card {
+    border-top: 1px solid var(--line-soft);
+    padding: 22px 0 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px 24px;
+    align-items: baseline;
+  }
+  .ontology-card:last-child { border-bottom: 1px solid var(--line-soft); }
+  .ontology-card .name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .ontology-card .name .pageno {
+    font-family: var(--mono);
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-left: 12px;
+    letter-spacing: 0.04em;
+    vertical-align: middle;
+  }
+  .ontology-card .name .diagramlink {
+    font-family: var(--mono);
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--accent);
+    margin-left: 14px;
+    letter-spacing: 0.04em;
+    vertical-align: middle;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+    transition: border-color 120ms;
+  }
+  .ontology-card .name .diagramlink:hover {
+    border-bottom-color: var(--accent);
+  }
+  .ontology-card .name .year {
+    font-family: var(--mono);
+    font-weight: 400;
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-left: 8px;
+    font-style: normal;
+    vertical-align: middle;
+  }
+  .ontology-card .badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    justify-content: flex-end;
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    align-content: flex-start;
+    max-width: 360px;
+  }
+  .ontology-card .badge {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 2px 9px;
+    font-size: 10.5px;
+    font-family: var(--mono);
+    color: var(--ink);
+    background: var(--paper);
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+  }
+  .ontology-card .badge.neg {
+    background: var(--paper-soft);
+    border-style: dashed;
+    color: var(--ink-soft);
+  }
+  .ontology-card .summary {
+    grid-column: 1;
+    color: var(--ink-soft);
+    font-size: 14.5px;
+    line-height: 1.4;
+    font-style: italic;
+  }
+  .ontology-card .summary .commitments {
+    font-style: normal;
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.01em;
+    line-height: 1.7;
+    display: block;
+    margin-top: 4px;
+  }
+  .ontology-card .summary .commitments .neg {
+    color: var(--accent);
+    text-decoration: line-through;
+    text-decoration-color: var(--accent-soft);
+  }
+
+  /* No-results state */
+  .no-results {
+    padding: 40px 0;
+    text-align: center;
+  }
+  .no-results .headline {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 24px;
+    margin-bottom: 8px;
+  }
+  .no-results .subtext {
+    font-style: italic;
+    color: var(--ink-soft);
+    margin-bottom: 24px;
+  }
+  .no-results .suggestions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+  }
+  .no-results .suggestions button {
+    background: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-family: var(--serif);
+    font-size: 14px;
+    color: var(--ink);
+    cursor: pointer;
+    transition: all 120ms;
+  }
+  .no-results .suggestions button:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .no-results .suggestions .count {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    margin-left: 8px;
+  }
+  .no-results .suggestions button:hover .count { color: var(--paper); opacity: 0.7; }
+
+  /* Active filter chip */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--line);
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 999px;
+    padding: 4px 10px 4px 12px;
+    font-size: 12.5px;
+    font-family: var(--mono);
+    letter-spacing: 0.02em;
+  }
+  .chip.exclude {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .chip button {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 0 0 4px;
+    line-height: 1;
+    opacity: 0.7;
+  }
+  .chip button:hover { opacity: 1; }
+  .chip .dim {
+    opacity: 0.55;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-right: 2px;
+  }
+
+  /* Footer */
+  footer.foot {
+    margin-top: 80px;
+    padding-top: 24px;
+    border-top: 1.5px solid var(--line);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.03em;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  /* Validator console (collapsed by default) */
+  .validator {
+    margin-top: 32px;
+    border: 1px dashed var(--line-soft);
+    padding: 12px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-soft);
+    background: var(--paper-soft);
+  }
+  .validator summary {
+    cursor: pointer;
+    color: var(--ink);
+    font-weight: 500;
+    user-select: none;
+  }
+  .validator ul { margin: 8px 0 0 16px; padding: 0; }
+  .validator li { margin-bottom: 3px; line-height: 1.4; }
+  .validator li.warn { color: var(--accent); }
+  .validator li.info { color: var(--ink-faint); }
+</style>
+</head>
+
+<body>
+<div class="page">
+
+<header class="masthead">
+  <div>
+    <h1>Choose an ontology</h1>
+    <div class="subtitle">Fourteen categorial schemes, faceted by stance, commitments, and tooling.</div>
+  </div>
+  <div class="meta">
+    DECK v9 &middot; 14 SCHEMES &middot; 22 DESCRIPTORS<br>
+    <a href="ontological-categories-v9.pdf" target="_blank">view the full deck (PDF)</a>
+  </div>
+</header>
+
+<div class="activefilters" id="activefilters">
+  <span class="label">Active filters:</span>
+  <span class="empty" id="activefilters-empty">none — showing all 14 ontologies</span>
+  <div class="resultcount" id="resultcount"></div>
+</div>
+
+<div class="grid">
+
+  <!-- ──────────────── FILTERS COLUMN ──────────────── -->
+  <aside class="filters" id="filters">
+    <!-- populated by JS -->
+  </aside>
+
+  <!-- ──────────────── RESULTS COLUMN ──────────────── -->
+  <main class="results">
+    <div class="results-list" id="results-list">
+      <!-- populated by JS -->
+    </div>
+  </main>
+
+</div>
+
+<details class="validator" id="validator">
+  <summary>Data validator (consistency checks)</summary>
+  <ul id="validator-output"></ul>
+</details>
+
+<footer class="foot">
+  <div>Categorial schemes from Plato to Glasersfeld &middot; built as an extension of the v9 deck</div>
+  <div>edit <code>ontology_descriptors.json</code> to adjust</div>
+</footer>
+
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════
+   DATA — embedded directly so the page works offline / without server.
+   Keep this in sync with ontology_descriptors.json.
+   ════════════════════════════════════════════════════════════════════ */
+
+const DATA = {"ontologies": {"plato": {"title": "Plato", "label": "PLATO", "page": 1, "publication_year": -380, "layer1": {"stance": "Mind-independent", "lineage": null, "encoding_present": false, "time_model": null}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "does-not-admit", "substance": "does-not-admit", "process_event": "does-not-admit", "mereology": "does-not-admit", "dependence": "admits", "qualities": "does-not-admit?", "roles": "does-not-admit", "information_artifacts": "does-not-admit", "fictional_objects": "does-not-admit", "mental_entities": "does-not-admit", "social_entities": "does-not-admit", "possible_entities": "does-not-admit", "boundaries": "does-not-admit"}, "layer3": {"encoding_format": ["none"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "none", "deployment_maturity": "philosophical", "licensing": "n/a"}}, "aristotle": {"title": "Aristotle", "label": "ARISTOTLE", "page": 2, "publication_year": -340, "layer1": {"stance": "Mind-independent", "lineage": null, "encoding_present": false, "time_model": "Endurantist"}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "does-not-admit?", "substance": "admits", "process_event": "does-not-admit", "mereology": "admits?", "dependence": "admits", "qualities": "admits", "roles": "does-not-admit", "information_artifacts": "does-not-admit", "fictional_objects": "does-not-admit", "mental_entities": "does-not-admit?", "social_entities": "does-not-admit", "possible_entities": "does-not-admit", "boundaries": "does-not-admit?"}, "layer3": {"encoding_format": ["none"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "none", "deployment_maturity": "philosophical", "licensing": "n/a"}}, "tractatus": {"title": "Tractatus", "label": "TRACTATUS", "page": 3, "publication_year": 1921, "layer1": {"stance": "Mind-independent", "lineage": null, "encoding_present": false, "time_model": null}, "layer2": {"universals": "does-not-admit", "particulars": "admits", "tropes": "does-not-admit", "substance": "admits", "process_event": "does-not-admit", "mereology": "admits", "dependence": "admits", "qualities": "does-not-admit?", "roles": "does-not-admit", "information_artifacts": "does-not-admit", "fictional_objects": "does-not-admit", "mental_entities": "does-not-admit", "social_entities": "does-not-admit", "possible_entities": "admits", "boundaries": "does-not-admit"}, "layer3": {"encoding_format": ["none"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "none", "deployment_maturity": "philosophical", "licensing": "n/a"}}, "meinong": {"title": "Meinong", "label": "MEINONG", "page": 4, "publication_year": 1904, "layer1": {"stance": "Mind-inclusive", "lineage": null, "encoding_present": false, "time_model": null}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "does-not-admit?", "substance": "admits?", "process_event": "does-not-admit", "mereology": "does-not-admit", "dependence": "does-not-admit", "qualities": "admits", "roles": "does-not-admit", "information_artifacts": "does-not-admit", "fictional_objects": "admits", "mental_entities": "admits", "social_entities": "does-not-admit", "possible_entities": "admits", "boundaries": "does-not-admit"}, "layer3": {"encoding_format": ["none"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "none", "deployment_maturity": "philosophical", "licensing": "n/a"}}, "chisholm": {"title": "Chisholm", "label": "CHISHOLM", "page": 5, "publication_year": 1996, "layer1": {"stance": "Mind-inclusive", "lineage": null, "encoding_present": false, "time_model": null}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "does-not-admit", "substance": "admits", "process_event": "admits", "mereology": "admits?", "dependence": "admits", "qualities": "admits", "roles": "does-not-admit", "information_artifacts": "does-not-admit", "fictional_objects": "admits", "mental_entities": "admits", "social_entities": "does-not-admit?", "possible_entities": "admits", "boundaries": "admits"}, "layer3": {"encoding_format": ["none"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "none", "deployment_maturity": "philosophical", "licensing": "n/a"}}, "lowe": {"title": "Lowe", "label": "LOWE", "page": 6, "publication_year": 2006, "layer1": {"stance": "Mind-independent", "lineage": "Aristotelian", "encoding_present": false, "time_model": "Endurantist"}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "admits", "substance": "admits", "process_event": "does-not-admit", "mereology": "admits", "dependence": "admits", "qualities": "admits", "roles": "does-not-admit", "information_artifacts": "does-not-admit", "fictional_objects": "does-not-admit", "mental_entities": "does-not-admit", "social_entities": "does-not-admit", "possible_entities": "does-not-admit", "boundaries": "does-not-admit?"}, "layer3": {"encoding_format": ["none"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "none", "deployment_maturity": "philosophical", "licensing": "n/a"}}, "rosenkrantz": {"title": "Rosenkrantz", "label": "ROSENKRANTZ", "page": 7, "publication_year": 1994, "layer1": {"stance": "Mind-independent", "lineage": "Aristotelian", "encoding_present": false, "time_model": "Endurantist"}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "admits", "substance": "admits", "process_event": "admits", "mereology": "admits?", "dependence": "admits", "qualities": "admits", "roles": "does-not-admit", "information_artifacts": "does-not-admit", "fictional_objects": "does-not-admit", "mental_entities": "does-not-admit", "social_entities": "does-not-admit", "possible_entities": "does-not-admit", "boundaries": "admits?"}, "layer3": {"encoding_format": ["none"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "none", "deployment_maturity": "philosophical", "licensing": "n/a"}}, "husserl": {"title": "Husserl", "label": "HUSSERL", "page": 8, "publication_year": 1900, "layer1": {"stance": "Mind-inclusive", "lineage": null, "encoding_present": false, "time_model": null}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "admits?", "substance": "admits", "process_event": "admits?", "mereology": "admits", "dependence": "admits", "qualities": "admits", "roles": "does-not-admit?", "information_artifacts": "admits?", "fictional_objects": "admits?", "mental_entities": "admits", "social_entities": "admits", "possible_entities": "admits?", "boundaries": "admits"}, "layer3": {"encoding_format": ["none"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "none", "deployment_maturity": "philosophical", "licensing": "n/a"}}, "bfo": {"title": "BFO", "label": "BFO", "page": 9, "publication_year": 2002, "layer1": {"stance": "Mind-independent", "lineage": "Aristotelian", "encoding_present": true, "time_model": "Endurantist + Perdurantist"}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "does-not-admit", "substance": "admits", "process_event": "admits", "mereology": "admits", "dependence": "admits", "qualities": "admits", "roles": "admits", "information_artifacts": "admits", "fictional_objects": "does-not-admit", "mental_entities": "does-not-admit?", "social_entities": "admits?", "possible_entities": "does-not-admit", "boundaries": "admits"}, "layer3": {"encoding_format": ["OWL2", "FOL/CLIF", "Common Logic"], "reasoner_support": true, "editor_support": true, "domain_ecosystem": "extensive", "deployment_maturity": "production-deployed", "licensing": "open"}}, "dolce": {"title": "DOLCE", "label": "DOLCE", "page": 10, "publication_year": 2003, "layer1": {"stance": "Mind-inclusive", "lineage": null, "encoding_present": true, "time_model": "Endurantist + Perdurantist"}, "layer2": {"universals": "admits?", "particulars": "admits", "tropes": "admits", "substance": "admits", "process_event": "admits", "mereology": "admits", "dependence": "admits", "qualities": "admits", "roles": "admits", "information_artifacts": "admits", "fictional_objects": "does-not-admit?", "mental_entities": "admits", "social_entities": "admits", "possible_entities": "does-not-admit?", "boundaries": "admits?"}, "layer3": {"encoding_format": ["OWL2", "FOL/CLIF"], "reasoner_support": true, "editor_support": true, "domain_ecosystem": "moderate", "deployment_maturity": "production-deployed", "licensing": "open"}}, "sumo": {"title": "SUMO", "label": "SUMO", "page": 11, "publication_year": 2001, "layer1": {"stance": "Mind-independent", "lineage": null, "encoding_present": true, "time_model": "Endurantist + Perdurantist"}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "does-not-admit?", "substance": "admits", "process_event": "admits", "mereology": "admits", "dependence": "admits?", "qualities": "admits", "roles": "admits", "information_artifacts": "admits", "fictional_objects": "does-not-admit?", "mental_entities": "admits", "social_entities": "admits", "possible_entities": "admits?", "boundaries": "admits?"}, "layer3": {"encoding_format": ["KIF/SUO-KIF", "OWL2"], "reasoner_support": true, "editor_support": true, "domain_ecosystem": "extensive", "deployment_maturity": "production-deployed", "licensing": "open"}}, "gfo": {"title": "GFO", "label": "GFO", "page": 12, "publication_year": 1999, "layer1": {"stance": "Mind-inclusive", "lineage": null, "encoding_present": true, "time_model": "Endurantist + Perdurantist"}, "layer2": {"universals": "admits", "particulars": "admits", "tropes": "admits", "substance": "admits", "process_event": "admits", "mereology": "admits", "dependence": "admits", "qualities": "admits", "roles": "admits", "information_artifacts": "admits", "fictional_objects": "does-not-admit?", "mental_entities": "admits", "social_entities": "admits", "possible_entities": "admits?", "boundaries": "admits?"}, "layer3": {"encoding_format": ["OWL2", "FOL/CLIF"], "reasoner_support": true, "editor_support": true, "domain_ecosystem": "moderate", "deployment_maturity": "research-projects", "licensing": "open"}}, "efo": {"title": "EFO", "label": "EFO", "page": 13, "publication_year": 2025, "layer1": {"stance": "Representational", "lineage": null, "encoding_present": true, "time_model": null}, "layer2": {"universals": "does-not-admit?", "particulars": "admits", "tropes": "does-not-admit?", "substance": "does-not-admit?", "process_event": "admits", "mereology": "admits?", "dependence": "admits", "qualities": "admits", "roles": "does-not-admit?", "information_artifacts": "admits", "fictional_objects": "admits", "mental_entities": "admits", "social_entities": "does-not-admit?", "possible_entities": "admits", "boundaries": "does-not-admit?"}, "layer3": {"encoding_format": ["FOL/CLIF?"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "minimal", "deployment_maturity": "academic-only", "licensing": "open?"}}, "glasersfeld": {"title": "Radical Constructivism", "label": "RADICAL CONSTRUCTIVISM", "page": 14, "publication_year": 1995, "layer1": {"stance": ["Non-Mind-independent", "Non-Mind-inclusive", "Non-Representational"], "lineage": null, "encoding_present": false, "time_model": null}, "layer2": {"_note": "Radical Constructivism is a meta-position with no categorial scheme. Layer-2 questions about what it 'admits' do not apply in the same sense as for the other ontologies. All values null = not-applicable.", "universals": null, "particulars": null, "tropes": null, "substance": null, "process_event": null, "mereology": null, "dependence": null, "qualities": null, "roles": null, "information_artifacts": null, "fictional_objects": null, "mental_entities": null, "social_entities": null, "possible_entities": null, "boundaries": null}, "layer3": {"encoding_format": ["none"], "reasoner_support": false, "editor_support": false, "domain_ecosystem": "none", "deployment_maturity": "philosophical", "licensing": "n/a"}}}};
+
+/* ════════════════════════════════════════════════════════════════════
+   UI VOCABULARIES — human-readable labels for descriptor keys
+   ════════════════════════════════════════════════════════════════════ */
+
+const LAYER1_FACETS = [
+  { key: 'stance',         label: 'Stance',
+    options: ['Mind-independent', 'Mind-inclusive', 'Representational',
+              'Non-Mind-independent', 'Non-Mind-inclusive', 'Non-Representational'] },
+  { key: 'lineage',        label: 'Lineage',
+    options: ['Aristotelian'] },
+  { key: 'encoding_present', label: 'Has formal encoding',
+    options: [true], optionLabels: ['Formalized'] },
+  { key: 'time_model',     label: 'Time model',
+    options: ['Endurantist', 'Endurantist + Perdurantist'] }
+];
+
+const LAYER2_DESCRIPTORS = [
+  ['universals',            'Universals'],
+  ['particulars',           'Particulars'],
+  ['tropes',                'Tropes'],
+  ['substance',             'Substance'],
+  ['process_event',         'Process / event'],
+  ['mereology',             'Mereology'],
+  ['dependence',            'Dependence'],
+  ['qualities',             'Qualities'],
+  ['roles',                 'Roles'],
+  ['information_artifacts', 'Information artifacts'],
+  ['fictional_objects',     'Fictional objects'],
+  ['mental_entities',       'Mental entities'],
+  ['social_entities',       'Social entities'],
+  ['possible_entities',     'Possible / non-actual'],
+  ['boundaries',            'Boundaries / dependent particulars']
+];
+
+const LAYER3_FACETS = [
+  { key: 'encoding_format',     label: 'Encoding format',
+    options: ['OWL2', 'KIF/SUO-KIF', 'FOL/CLIF', 'Common Logic', 'none'],
+    type: 'multi-OR', isList: true },
+  { key: 'reasoner_support',    label: 'Reasoner support',
+    options: [true], optionLabels: ['available'], type: 'binary' },
+  { key: 'editor_support',      label: 'Editor support',
+    options: [true], optionLabels: ['available'], type: 'binary' },
+  { key: 'domain_ecosystem',    label: 'Domain ecosystem (minimum)',
+    options: ['extensive', 'moderate', 'minimal', 'none'],
+    type: 'min-rank' },
+  { key: 'deployment_maturity', label: 'Deployment maturity (minimum)',
+    options: ['production-deployed', 'research-projects', 'academic-only', 'philosophical'],
+    type: 'min-rank' },
+  { key: 'licensing',           label: 'Licensing',
+    options: ['open', 'restricted', 'n/a'],
+    type: 'multi-OR' }
+];
+
+/* The minimum-rank facets need an ordering: rank 0 is the strictest. */
+const RANKS = {
+  domain_ecosystem:    { 'extensive': 0, 'moderate': 1, 'minimal': 2, 'none': 3 },
+  deployment_maturity: { 'production-deployed': 0, 'research-projects': 1, 'academic-only': 2, 'philosophical': 3 }
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   STATE — the filters currently applied
+   ════════════════════════════════════════════════════════════════════ */
+
+const state = {
+  layer1: {},      // { facet_key: Set of selected option values }
+  layer2: {},      // { descriptor_key: 'must' | 'must-not' | undefined }
+  layer3: {}       // { facet_key: Set of selected option values, or single value for min-rank }
+};
+
+/* ════════════════════════════════════════════════════════════════════
+   HELPERS — clean a value of trailing '?', test admission, etc.
+   ════════════════════════════════════════════════════════════════════ */
+
+function clean(v) {
+  if (typeof v === 'string' && v.endsWith('?')) return v.slice(0, -1);
+  return v;
+}
+
+function admits(ontology, descriptor) {
+  const v = clean(ontology.layer2[descriptor]);
+  return v === 'admits';
+}
+function doesNotAdmit(ontology, descriptor) {
+  const v = clean(ontology.layer2[descriptor]);
+  return v === 'does-not-admit';
+}
+
+function l1MatchesFacet(ontology, facet, selectedSet) {
+  if (!selectedSet || selectedSet.size === 0) return true;
+  const v = ontology.layer1[facet.key];
+  // value can be a list (e.g. Glasersfeld's stance is 3 negation pills)
+  if (Array.isArray(v)) {
+    for (const item of v) if (selectedSet.has(item)) return true;
+    return false;
+  }
+  // for booleans / scalar
+  if (selectedSet.has(v)) return true;
+  // For single-value facets, "Aristotelian"/"Endurantist" are inclusion checks;
+  // null values (i.e. ontology takes no position) don't match.
+  return false;
+}
+
+function l3MatchesFacet(ontology, facet, selection) {
+  if (!selection || (selection instanceof Set && selection.size === 0)) return true;
+  const raw = ontology.layer3[facet.key];
+
+  if (facet.type === 'multi-OR') {
+    if (facet.isList) {
+      // raw is an array; match if any element is in selection
+      const cleanedRaw = (raw || []).map(clean);
+      for (const v of cleanedRaw) if (selection.has(v)) return true;
+      return false;
+    } else {
+      const cv = clean(raw);
+      return selection.has(cv);
+    }
+  }
+  if (facet.type === 'binary') {
+    // selection contains true if user wants the feature
+    if (selection.has(true)) return raw === true;
+    return true;
+  }
+  if (facet.type === 'min-rank') {
+    // selection is a single string value (the minimum acceptable level)
+    // strictness rank: 0 = best, higher = looser
+    const userMin = (typeof selection === 'string') ? selection : Array.from(selection)[0];
+    if (!userMin) return true;
+    const userRank = RANKS[facet.key][userMin];
+    const ontRank  = RANKS[facet.key][clean(raw)];
+    return ontRank !== undefined && ontRank <= userRank;
+  }
+  return true;
+}
+
+function ontologyMatches(ontology, ignoreFilter = null) {
+  // ignoreFilter: { layer, key, opt } — temporarily remove this one filter
+  // (used for "remove this filter to see N results" suggestions)
+
+  for (const facet of LAYER1_FACETS) {
+    let sel = state.layer1[facet.key];
+    if (ignoreFilter && ignoreFilter.layer === 1 && ignoreFilter.key === facet.key) {
+      sel = new Set([...sel].filter(o => o !== ignoreFilter.opt));
+      if (sel.size === 0) sel = null;
+    }
+    if (!l1MatchesFacet(ontology, facet, sel)) return false;
+  }
+  for (const [key, label] of LAYER2_DESCRIPTORS) {
+    let s = state.layer2[key];
+    if (ignoreFilter && ignoreFilter.layer === 2 && ignoreFilter.key === key) s = undefined;
+    if (s === 'must'     && !admits(ontology, key))      return false;
+    if (s === 'must-not' && !doesNotAdmit(ontology, key)) return false;
+  }
+  for (const facet of LAYER3_FACETS) {
+    let sel = state.layer3[facet.key];
+    if (ignoreFilter && ignoreFilter.layer === 3 && ignoreFilter.key === facet.key) {
+      if (sel instanceof Set) {
+        sel = new Set([...sel].filter(o => o !== ignoreFilter.opt));
+        if (sel.size === 0) sel = null;
+      } else {
+        sel = null;
+      }
+    }
+    if (!l3MatchesFacet(ontology, facet, sel)) return false;
+  }
+  return true;
+}
+
+function getMatching(ignoreFilter = null) {
+  return Object.entries(DATA.ontologies)
+    .filter(([_, o]) => ontologyMatches(o, ignoreFilter))
+    .map(([k, o]) => ({ key: k, ...o }));
+}
+
+/* For each option in each facet, count how many ontologies would match if that
+   option were ADDED to the current selection (or, for already-selected options,
+   how many match WITH it). */
+function computeOptionCounts() {
+  const counts = { layer1: {}, layer3: {} };
+  for (const facet of LAYER1_FACETS) {
+    counts.layer1[facet.key] = {};
+    for (const opt of facet.options) {
+      // Temporarily add this option, count, restore
+      const currentSel = state.layer1[facet.key] || new Set();
+      const wasIn = currentSel.has(opt);
+      const trial = new Set(currentSel);
+      if (!wasIn) trial.add(opt);
+      const saved = state.layer1[facet.key];
+      state.layer1[facet.key] = trial;
+      counts.layer1[facet.key][String(opt)] = getMatching().length;
+      state.layer1[facet.key] = saved;
+    }
+  }
+  for (const facet of LAYER3_FACETS) {
+    counts.layer3[facet.key] = {};
+    if (facet.type === 'min-rank') {
+      // For min-rank, count how many would match at each level
+      for (const opt of facet.options) {
+        const saved = state.layer3[facet.key];
+        state.layer3[facet.key] = opt;
+        counts.layer3[facet.key][opt] = getMatching().length;
+        state.layer3[facet.key] = saved;
+      }
+    } else {
+      for (const opt of facet.options) {
+        const currentSel = state.layer3[facet.key] || new Set();
+        const wasIn = currentSel instanceof Set ? currentSel.has(opt) : false;
+        const trial = currentSel instanceof Set ? new Set(currentSel) : new Set();
+        if (!wasIn) trial.add(opt);
+        const saved = state.layer3[facet.key];
+        state.layer3[facet.key] = trial;
+        counts.layer3[facet.key][String(opt)] = getMatching().length;
+        state.layer3[facet.key] = saved;
+      }
+    }
+  }
+  return counts;
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   RENDER
+   ════════════════════════════════════════════════════════════════════ */
+
+function render() {
+  renderFilters();
+  renderResults();
+  renderActiveFilters();
+}
+
+function renderFilters() {
+  const counts = computeOptionCounts();
+  const root = document.getElementById('filters');
+  root.innerHTML = '';
+
+  // ── Layer 1 ───────────────────────────────────────────────────
+  const l1 = document.createElement('div');
+  l1.className = 'layer';
+  l1.innerHTML = '<div class="layer-title"><span>Stance &amp; profile</span><span class="layer-num">layer 1</span></div>';
+  for (const facet of LAYER1_FACETS) {
+    const sel = state.layer1[facet.key] || new Set();
+    const desc = document.createElement('div');
+    desc.className = 'descriptor';
+    const showReset = sel.size > 0 ? '' : 'hidden';
+    desc.innerHTML = `<div class="descriptor-label"><span>${facet.label}</span>
+      <button class="reset ${showReset}" data-action="reset-l1" data-key="${facet.key}">clear</button></div>`;
+    const group = document.createElement('div');
+    group.className = 'pillgroup';
+    facet.options.forEach((opt, i) => {
+      const label = (facet.optionLabels && facet.optionLabels[i]) || String(opt);
+      const lbl = document.createElement('label');
+      const count = counts.layer1[facet.key][String(opt)];
+      const isSelected = sel.has(opt);
+      const wouldEmpty = count === 0;
+      lbl.className = (wouldEmpty && !isSelected) ? 'disabled' : '';
+      lbl.innerHTML = `<input type="checkbox" data-layer="1" data-key="${facet.key}"
+                          data-opt="${escapeAttr(opt)}" ${isSelected ? 'checked' : ''}
+                          ${wouldEmpty && !isSelected ? 'disabled' : ''}>
+                       <span>${label}</span>
+                       <span class="count">${count}</span>`;
+      group.appendChild(lbl);
+    });
+    desc.appendChild(group);
+    l1.appendChild(desc);
+  }
+  root.appendChild(l1);
+
+  // ── Layer 2 ───────────────────────────────────────────────────
+  const l2 = document.createElement('div');
+  l2.className = 'layer';
+  l2.innerHTML = '<div class="layer-title"><span>Categorial commitments</span><span class="layer-num">layer 2</span></div>';
+  for (const [key, label] of LAYER2_DESCRIPTORS) {
+    const cur = state.layer2[key];   // 'must' | 'must-not' | undefined
+    const desc = document.createElement('div');
+    desc.className = 'descriptor';
+    const showReset = cur ? '' : 'hidden';
+    desc.innerHTML = `<div class="descriptor-label"><span>${label}</span>
+      <button class="reset ${showReset}" data-action="reset-l2" data-key="${key}">clear</button></div>`;
+    const tri = document.createElement('div');
+    tri.className = 'tristate';
+    tri.innerHTML = `
+      <label class="must"><input type="radio" name="l2-${key}" data-layer="2" data-key="${key}" data-val="must"     ${cur==='must'    ?'checked':''}><span>must admit</span></label>
+      <label class="exclude"><input type="radio" name="l2-${key}" data-layer="2" data-key="${key}" data-val="must-not" ${cur==='must-not'?'checked':''}><span>must not</span></label>
+      <label class="any"><input type="radio" name="l2-${key}" data-layer="2" data-key="${key}" data-val="any"      ${!cur            ?'checked':''}><span>don't care</span></label>
+    `;
+    desc.appendChild(tri);
+    l2.appendChild(desc);
+  }
+  root.appendChild(l2);
+
+  // ── Layer 3 ───────────────────────────────────────────────────
+  const l3 = document.createElement('div');
+  l3.className = 'layer';
+  l3.innerHTML = '<div class="layer-title"><span>Practical &amp; tooling</span><span class="layer-num">layer 3</span></div>';
+  for (const facet of LAYER3_FACETS) {
+    const sel = state.layer3[facet.key];
+    const desc = document.createElement('div');
+    desc.className = 'descriptor';
+    const hasSel = (sel instanceof Set && sel.size > 0) || (typeof sel === 'string' && sel);
+    const showReset = hasSel ? '' : 'hidden';
+    desc.innerHTML = `<div class="descriptor-label"><span>${facet.label}</span>
+      <button class="reset ${showReset}" data-action="reset-l3" data-key="${facet.key}">clear</button></div>`;
+    const group = document.createElement('div');
+    group.className = 'pillgroup';
+    facet.options.forEach((opt, i) => {
+      const label = (facet.optionLabels && facet.optionLabels[i]) || String(opt);
+      const lbl = document.createElement('label');
+      const count = counts.layer3[facet.key][String(opt)];
+      let isSelected;
+      if (facet.type === 'min-rank') {
+        isSelected = (sel === opt);
+      } else {
+        isSelected = (sel instanceof Set) && sel.has(opt);
+      }
+      const wouldEmpty = count === 0;
+      lbl.className = (wouldEmpty && !isSelected) ? 'disabled' : '';
+      const inputType = facet.type === 'min-rank' ? 'radio' : 'checkbox';
+      const inputName = facet.type === 'min-rank' ? `name="l3-${facet.key}"` : '';
+      lbl.innerHTML = `<input type="${inputType}" ${inputName} data-layer="3" data-key="${facet.key}"
+                          data-opt="${escapeAttr(opt)}" data-type="${facet.type}"
+                          ${isSelected ? 'checked' : ''}
+                          ${wouldEmpty && !isSelected ? 'disabled' : ''}>
+                       <span>${label}</span>
+                       <span class="count">${count}</span>`;
+      group.appendChild(lbl);
+    });
+    desc.appendChild(group);
+    l3.appendChild(desc);
+  }
+  root.appendChild(l3);
+}
+
+function renderActiveFilters() {
+  const strip = document.getElementById('activefilters');
+  // remove existing chips and empty placeholder content (but keep label and resultcount)
+  strip.querySelectorAll('.chip').forEach(c => c.remove());
+  const empty = strip.querySelector('#activefilters-empty');
+
+  const chips = [];
+  // Layer 1
+  for (const facet of LAYER1_FACETS) {
+    const sel = state.layer1[facet.key];
+    if (sel) for (const opt of sel) {
+      const idx = facet.options.indexOf(opt);
+      const label = (facet.optionLabels && facet.optionLabels[idx]) || String(opt);
+      chips.push(makeChip(facet.label, label, () => {
+        state.layer1[facet.key].delete(opt);
+        if (state.layer1[facet.key].size === 0) delete state.layer1[facet.key];
+        render();
+      }));
+    }
+  }
+  // Layer 2
+  for (const [key, label] of LAYER2_DESCRIPTORS) {
+    const cur = state.layer2[key];
+    if (cur === 'must') {
+      chips.push(makeChip(label, 'must admit', () => { delete state.layer2[key]; render(); }));
+    } else if (cur === 'must-not') {
+      chips.push(makeChip(label, 'must not admit', () => { delete state.layer2[key]; render(); }, true));
+    }
+  }
+  // Layer 3
+  for (const facet of LAYER3_FACETS) {
+    const sel = state.layer3[facet.key];
+    if (sel instanceof Set) {
+      for (const opt of sel) {
+        chips.push(makeChip(facet.label, String(opt), () => {
+          state.layer3[facet.key].delete(opt);
+          if (state.layer3[facet.key].size === 0) delete state.layer3[facet.key];
+          render();
+        }));
+      }
+    } else if (typeof sel === 'string') {
+      chips.push(makeChip(facet.label, `≥ ${sel}`, () => { delete state.layer3[facet.key]; render(); }));
+    }
+  }
+
+  if (chips.length === 0) {
+    empty.style.display = '';
+  } else {
+    empty.style.display = 'none';
+    chips.forEach(ch => strip.insertBefore(ch, document.getElementById('resultcount')));
+  }
+
+  const matching = getMatching();
+  document.getElementById('resultcount').innerHTML =
+    `<strong>${matching.length}</strong> of 14 ontologies match`;
+}
+
+function makeChip(dim, val, onRemove, exclude=false) {
+  const c = document.createElement('span');
+  c.className = 'chip' + (exclude ? ' exclude' : '');
+  c.innerHTML = `<span class="dim">${dim}</span>${val}<button title="remove">&times;</button>`;
+  c.querySelector('button').addEventListener('click', onRemove);
+  return c;
+}
+
+function renderResults() {
+  const root = document.getElementById('results-list');
+  root.innerHTML = '';
+  const matching = getMatching();
+
+  if (matching.length === 0) {
+    root.innerHTML = '<div class="no-results"><div class="headline">No ontology matches all your filters.</div>' +
+                     '<div class="subtext">These filters together exclude every ontology in the deck:</div>' +
+                     '<div class="suggestions" id="no-results-suggestions"></div></div>';
+    renderSuggestions();
+    return;
+  }
+
+  for (const o of matching) {
+    const card = document.createElement('div');
+    card.className = 'ontology-card';
+    const stance = o.layer1.stance;
+    const stanceArr = Array.isArray(stance) ? stance : [stance];
+
+    const allBadges = [];
+    stanceArr.forEach(s => {
+      const isNeg = String(s).startsWith('Non-');
+      allBadges.push({ text: s, neg: isNeg });
+    });
+    if (o.layer1.lineage) allBadges.push({ text: o.layer1.lineage });
+    if (o.layer1.encoding_present) allBadges.push({ text: 'Formalized' });
+    if (o.layer1.time_model)       allBadges.push({ text: o.layer1.time_model });
+
+    const badgeHtml = allBadges
+      .map(b => `<span class="badge${b.neg ? ' neg' : ''}">${b.text}</span>`).join('');
+
+    // Layer 2 mini-summary: list 4-5 most informative commitments
+    const commitments = summariseCommitments(o);
+
+    card.innerHTML = `
+      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view diagram &rarr;</a></div>
+      <div class="badges">${badgeHtml}</div>
+      <div class="summary">${commitments}</div>
+    `;
+    root.appendChild(card);
+  }
+}
+
+function renderSuggestions() {
+  const root = document.getElementById('no-results-suggestions');
+  if (!root) return;
+  // For each currently-active filter, compute how many would match if we removed it
+  const suggestions = [];
+
+  for (const facet of LAYER1_FACETS) {
+    const sel = state.layer1[facet.key];
+    if (sel) for (const opt of sel) {
+      const n = getMatching({ layer: 1, key: facet.key, opt }).length;
+      if (n > 0) suggestions.push({ label: `Remove "${opt}" filter`, count: n,
+        action: () => { state.layer1[facet.key].delete(opt);
+                        if (state.layer1[facet.key].size === 0) delete state.layer1[facet.key];
+                        render(); } });
+    }
+  }
+  for (const [key, label] of LAYER2_DESCRIPTORS) {
+    if (state.layer2[key]) {
+      const n = getMatching({ layer: 2, key }).length;
+      if (n > 0) suggestions.push({ label: `Remove "${label}" requirement`, count: n,
+        action: () => { delete state.layer2[key]; render(); } });
+    }
+  }
+  for (const facet of LAYER3_FACETS) {
+    const sel = state.layer3[facet.key];
+    if (sel instanceof Set) {
+      for (const opt of sel) {
+        const n = getMatching({ layer: 3, key: facet.key, opt }).length;
+        if (n > 0) suggestions.push({ label: `Remove "${opt}" filter`, count: n,
+          action: () => { state.layer3[facet.key].delete(opt);
+                          if (state.layer3[facet.key].size === 0) delete state.layer3[facet.key];
+                          render(); } });
+      }
+    } else if (typeof sel === 'string') {
+      const n = getMatching({ layer: 3, key: facet.key }).length;
+      if (n > 0) suggestions.push({ label: `Loosen "${facet.label}" requirement`, count: n,
+        action: () => { delete state.layer3[facet.key]; render(); } });
+    }
+  }
+  suggestions.sort((a, b) => b.count - a.count);
+  for (const s of suggestions.slice(0, 5)) {
+    const btn = document.createElement('button');
+    btn.innerHTML = `${s.label}<span class="count">${s.count} match${s.count===1?'':'es'}</span>`;
+    btn.addEventListener('click', s.action);
+    root.appendChild(btn);
+  }
+}
+
+function summariseCommitments(o) {
+  // List commitments: show "admits X · Y" and "does not admit Z"
+  // Show only the more interesting commitments (skip particulars - everyone admits them).
+  const interesting = ['process_event', 'mereology', 'roles', 'tropes',
+                       'fictional_objects', 'mental_entities', 'social_entities',
+                       'information_artifacts', 'possible_entities', 'boundaries'];
+  const labels = Object.fromEntries(LAYER2_DESCRIPTORS);
+  const adm = [], not = [];
+  for (const k of interesting) {
+    const v = clean(o.layer2[k]);
+    if (v === 'admits') adm.push(labels[k]);
+    else if (v === 'does-not-admit') not.push(labels[k]);
+  }
+  const admStr = adm.slice(0, 5).map(s => s.toLowerCase()).join(' · ');
+  const notStr = not.slice(0, 3).map(s => `<span class="neg">${s.toLowerCase()}</span>`).join(' · ');
+  let out = '';
+  if (o.key === 'glasersfeld' || (o.layer2._note)) {
+    out = '<em>Meta-position: no categorial scheme.</em>';
+  } else {
+    if (admStr) out = `admits ${admStr}`;
+    if (notStr) out += (out ? ' &nbsp; ' : '') + `<span class="commitments">excludes ${notStr}</span>`;
+  }
+  return out || '<span class="commitments">— no specific commitments tracked</span>';
+}
+
+function formatYear(y) {
+  if (y < 0) return `c. ${-y} BCE`;
+  return `${y}`;
+}
+
+function escapeAttr(s) { return String(s).replace(/"/g, '&quot;'); }
+
+/* ════════════════════════════════════════════════════════════════════
+   EVENT WIRING
+   ════════════════════════════════════════════════════════════════════ */
+
+document.body.addEventListener('change', (e) => {
+  const t = e.target;
+  if (!(t instanceof HTMLInputElement)) return;
+  const layer = t.dataset.layer;
+  const key   = t.dataset.key;
+  const opt   = t.dataset.opt;
+
+  if (layer === '1') {
+    if (!state.layer1[key]) state.layer1[key] = new Set();
+    // Convert string back to original type (true / false / string)
+    const realOpt = (opt === 'true') ? true : (opt === 'false' ? false : opt);
+    if (t.checked) state.layer1[key].add(realOpt);
+    else           state.layer1[key].delete(realOpt);
+    if (state.layer1[key].size === 0) delete state.layer1[key];
+  } else if (layer === '2') {
+    const val = t.dataset.val;
+    if (val === 'any') delete state.layer2[key];
+    else state.layer2[key] = val;
+  } else if (layer === '3') {
+    const type = t.dataset.type;
+    if (type === 'min-rank') {
+      state.layer3[key] = opt;
+    } else {
+      if (!state.layer3[key] || !(state.layer3[key] instanceof Set)) state.layer3[key] = new Set();
+      const realOpt = (opt === 'true') ? true : (opt === 'false' ? false : opt);
+      if (t.checked) state.layer3[key].add(realOpt);
+      else           state.layer3[key].delete(realOpt);
+      if (state.layer3[key].size === 0) delete state.layer3[key];
+    }
+  }
+  render();
+});
+
+document.body.addEventListener('click', (e) => {
+  const t = e.target;
+  if (t.dataset && t.dataset.action) {
+    if (t.dataset.action === 'reset-l1') {
+      delete state.layer1[t.dataset.key]; render();
+    } else if (t.dataset.action === 'reset-l2') {
+      delete state.layer2[t.dataset.key]; render();
+    } else if (t.dataset.action === 'reset-l3') {
+      delete state.layer3[t.dataset.key]; render();
+    }
+  }
+});
+
+/* ════════════════════════════════════════════════════════════════════
+   VALIDATOR — internal-consistency checks, surfaced in the console box
+   ════════════════════════════════════════════════════════════════════ */
+
+function runValidator() {
+  const out = document.getElementById('validator-output');
+  out.innerHTML = '';
+  const warn = (msg) => out.insertAdjacentHTML('beforeend', `<li class="warn">⚠ ${msg}</li>`);
+  const info = (msg) => out.insertAdjacentHTML('beforeend', `<li class="info">${msg}</li>`);
+
+  const ont = DATA.ontologies;
+  let warnCount = 0, infoCount = 0;
+
+  for (const [k, o] of Object.entries(ont)) {
+    const l1 = o.layer1, l2 = o.layer2, l3 = o.layer3;
+
+    // 1. Endurantist + Perdurantist => process_event must be admitted
+    if (l1.time_model === 'Endurantist + Perdurantist' && clean(l2.process_event) !== 'admits') {
+      warn(`${k}: time_model is "${l1.time_model}" but process_event ≠ admits (got ${l2.process_event})`); warnCount++;
+    }
+    // 2. encoding_present: true => encoding_format must include something other than 'none'
+    if (l1.encoding_present === true) {
+      const fmts = (l3.encoding_format || []).map(clean);
+      if (fmts.length === 0 || (fmts.length === 1 && fmts[0] === 'none')) {
+        warn(`${k}: encoding_present=true but encoding_format is empty/none`); warnCount++;
+      }
+    }
+    // 3. extensive ecosystem implies production-deployed maturity
+    if (clean(l3.domain_ecosystem) === 'extensive' &&
+        clean(l3.deployment_maturity) !== 'production-deployed') {
+      warn(`${k}: ecosystem=extensive but maturity≠production-deployed`); warnCount++;
+    }
+    // 4. philosophical maturity implies no encoding, no reasoner
+    if (clean(l3.deployment_maturity) === 'philosophical') {
+      if (l1.encoding_present === true) {
+        warn(`${k}: maturity=philosophical but encoding_present=true`); warnCount++;
+      }
+      if (l3.reasoner_support === true) {
+        warn(`${k}: maturity=philosophical but reasoner_support=true`); warnCount++;
+      }
+    }
+    // 5. Aristotelian lineage => substance must be admitted
+    if (l1.lineage === 'Aristotelian' && clean(l2.substance) !== 'admits') {
+      warn(`${k}: lineage=Aristotelian but substance≠admits`); warnCount++;
+    }
+    // 6. count question marks (informational, not warnings)
+    let q = 0;
+    for (const v of Object.values(l2 || {})) {
+      if (typeof v === 'string' && v.endsWith('?')) q++;
+    }
+    if (q >= 5) { info(`${k}: ${q} uncertain (?) Layer-2 cells — worth verifying`); infoCount++; }
+  }
+
+  if (warnCount === 0) info('No inconsistency warnings.');
+  info(`${Object.keys(ont).length} ontologies checked · ${warnCount} warnings · ${infoCount} informational notes`);
+}
+
+/* ════════════════════════════════════════════════════════════════════
+   BOOT
+   ════════════════════════════════════════════════════════════════════ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  render();
+  runValidator();
+});
+</script>
+</body>
+</html>

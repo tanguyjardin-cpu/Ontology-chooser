@@ -1,0 +1,585 @@
+{
+  "_meta": {
+    "version": 1,
+    "deck": "ontological-categories-v9",
+    "ontology_count": 14,
+    "uncertainty_marker": "?",
+    "notes": "Cells suffixed with '?' (e.g. 'admits?') indicate values I am not certain of from training and that should be verified against primary sources before deploying in a chooser interface. Three-state Layer-2 values are 'admits', 'does-not-admit', or null (= don't care / not-applicable / contested-and-skipped)."
+  },
+
+  "_schema": {
+    "layer1_badges": {
+      "stance": ["Mind-independent", "Mind-inclusive", "Representational", "Non-Mind-independent", "Non-Mind-inclusive", "Non-Representational"],
+      "lineage": ["Aristotelian", null],
+      "encoding_present": [true, false],
+      "time_model": ["Endurantist", "Endurantist + Perdurantist", null]
+    },
+    "layer2_commitments": {
+      "_control_type": "three-state",
+      "_states": ["admits", "does-not-admit", null],
+      "descriptors": [
+        "universals",
+        "particulars",
+        "tropes",
+        "substance",
+        "process_event",
+        "mereology",
+        "dependence",
+        "qualities",
+        "roles",
+        "information_artifacts",
+        "fictional_objects",
+        "mental_entities",
+        "social_entities",
+        "possible_entities",
+        "boundaries"
+      ]
+    },
+    "layer3_practical": {
+      "encoding_format":   {"type": "multi-select-OR",  "values": ["OWL2", "KIF/SUO-KIF", "FOL/CLIF", "Common Logic", "none"]},
+      "reasoner_support":  {"type": "binary",           "values": [true, false]},
+      "editor_support":    {"type": "binary",           "values": [true, false]},
+      "domain_ecosystem":  {"type": "single-select-MIN","values": ["extensive", "moderate", "minimal", "none"]},
+      "deployment_maturity": {"type": "single-select-MIN","values": ["production-deployed", "research-projects", "academic-only", "philosophical"]},
+      "licensing":         {"type": "single-select",    "values": ["open", "restricted", "n/a"]},
+      "publication_year":  {"type": "year",             "values": "integer"}
+    }
+  },
+
+  "ontologies": {
+
+    "plato": {
+      "title": "Plato",
+      "label": "PLATO",
+      "page": 1,
+      "publication_year": -380,
+      "layer1": {
+        "stance": "Mind-independent",
+        "lineage": null,
+        "encoding_present": false,
+        "time_model": null
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "does-not-admit",
+        "substance":             "does-not-admit",
+        "process_event":         "does-not-admit",
+        "mereology":             "does-not-admit",
+        "dependence":            "admits",
+        "qualities":             "does-not-admit?",
+        "roles":                 "does-not-admit",
+        "information_artifacts": "does-not-admit",
+        "fictional_objects":     "does-not-admit",
+        "mental_entities":       "does-not-admit",
+        "social_entities":       "does-not-admit",
+        "possible_entities":     "does-not-admit",
+        "boundaries":            "does-not-admit"
+      },
+      "layer3": {
+        "encoding_format":     ["none"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "none",
+        "deployment_maturity": "philosophical",
+        "licensing":           "n/a"
+      }
+    },
+
+    "aristotle": {
+      "title": "Aristotle",
+      "label": "ARISTOTLE",
+      "page": 2,
+      "publication_year": -340,
+      "layer1": {
+        "stance": "Mind-independent",
+        "lineage": null,
+        "encoding_present": false,
+        "time_model": "Endurantist"
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "does-not-admit?",
+        "substance":             "admits",
+        "process_event":         "does-not-admit",
+        "mereology":             "admits?",
+        "dependence":            "admits",
+        "qualities":             "admits",
+        "roles":                 "does-not-admit",
+        "information_artifacts": "does-not-admit",
+        "fictional_objects":     "does-not-admit",
+        "mental_entities":       "does-not-admit?",
+        "social_entities":       "does-not-admit",
+        "possible_entities":     "does-not-admit",
+        "boundaries":            "does-not-admit?"
+      },
+      "layer3": {
+        "encoding_format":     ["none"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "none",
+        "deployment_maturity": "philosophical",
+        "licensing":           "n/a"
+      }
+    },
+
+    "tractatus": {
+      "title": "Tractatus",
+      "label": "TRACTATUS",
+      "page": 3,
+      "publication_year": 1921,
+      "layer1": {
+        "stance": "Mind-independent",
+        "lineage": null,
+        "encoding_present": false,
+        "time_model": null
+      },
+      "layer2": {
+        "universals":            "does-not-admit",
+        "particulars":           "admits",
+        "tropes":                "does-not-admit",
+        "substance":             "admits",
+        "process_event":         "does-not-admit",
+        "mereology":             "admits",
+        "dependence":            "admits",
+        "qualities":             "does-not-admit?",
+        "roles":                 "does-not-admit",
+        "information_artifacts": "does-not-admit",
+        "fictional_objects":     "does-not-admit",
+        "mental_entities":       "does-not-admit",
+        "social_entities":       "does-not-admit",
+        "possible_entities":     "admits",
+        "boundaries":            "does-not-admit"
+      },
+      "layer3": {
+        "encoding_format":     ["none"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "none",
+        "deployment_maturity": "philosophical",
+        "licensing":           "n/a"
+      }
+    },
+
+    "meinong": {
+      "title": "Meinong",
+      "label": "MEINONG",
+      "page": 4,
+      "publication_year": 1904,
+      "layer1": {
+        "stance": "Mind-inclusive",
+        "lineage": null,
+        "encoding_present": false,
+        "time_model": null
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "does-not-admit?",
+        "substance":             "admits?",
+        "process_event":         "does-not-admit",
+        "mereology":             "does-not-admit",
+        "dependence":            "does-not-admit",
+        "qualities":             "admits",
+        "roles":                 "does-not-admit",
+        "information_artifacts": "does-not-admit",
+        "fictional_objects":     "admits",
+        "mental_entities":       "admits",
+        "social_entities":       "does-not-admit",
+        "possible_entities":     "admits",
+        "boundaries":            "does-not-admit"
+      },
+      "layer3": {
+        "encoding_format":     ["none"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "none",
+        "deployment_maturity": "philosophical",
+        "licensing":           "n/a"
+      }
+    },
+
+    "chisholm": {
+      "title": "Chisholm",
+      "label": "CHISHOLM",
+      "page": 5,
+      "publication_year": 1996,
+      "layer1": {
+        "stance": "Mind-inclusive",
+        "lineage": null,
+        "encoding_present": false,
+        "time_model": null
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "does-not-admit",
+        "substance":             "admits",
+        "process_event":         "admits",
+        "mereology":             "admits?",
+        "dependence":            "admits",
+        "qualities":             "admits",
+        "roles":                 "does-not-admit",
+        "information_artifacts": "does-not-admit",
+        "fictional_objects":     "admits",
+        "mental_entities":       "admits",
+        "social_entities":       "does-not-admit?",
+        "possible_entities":     "admits",
+        "boundaries":            "admits"
+      },
+      "layer3": {
+        "encoding_format":     ["none"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "none",
+        "deployment_maturity": "philosophical",
+        "licensing":           "n/a"
+      }
+    },
+
+    "lowe": {
+      "title": "Lowe",
+      "label": "LOWE",
+      "page": 6,
+      "publication_year": 2006,
+      "layer1": {
+        "stance": "Mind-independent",
+        "lineage": "Aristotelian",
+        "encoding_present": false,
+        "time_model": "Endurantist"
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "admits",
+        "substance":             "admits",
+        "process_event":         "does-not-admit",
+        "mereology":             "admits",
+        "dependence":            "admits",
+        "qualities":             "admits",
+        "roles":                 "does-not-admit",
+        "information_artifacts": "does-not-admit",
+        "fictional_objects":     "does-not-admit",
+        "mental_entities":       "does-not-admit",
+        "social_entities":       "does-not-admit",
+        "possible_entities":     "does-not-admit",
+        "boundaries":            "does-not-admit?"
+      },
+      "layer3": {
+        "encoding_format":     ["none"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "none",
+        "deployment_maturity": "philosophical",
+        "licensing":           "n/a"
+      }
+    },
+
+    "rosenkrantz": {
+      "title": "Rosenkrantz",
+      "label": "ROSENKRANTZ",
+      "page": 7,
+      "publication_year": 1994,
+      "layer1": {
+        "stance": "Mind-independent",
+        "lineage": "Aristotelian",
+        "encoding_present": false,
+        "time_model": "Endurantist"
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "admits",
+        "substance":             "admits",
+        "process_event":         "admits",
+        "mereology":             "admits?",
+        "dependence":            "admits",
+        "qualities":             "admits",
+        "roles":                 "does-not-admit",
+        "information_artifacts": "does-not-admit",
+        "fictional_objects":     "does-not-admit",
+        "mental_entities":       "does-not-admit",
+        "social_entities":       "does-not-admit",
+        "possible_entities":     "does-not-admit",
+        "boundaries":            "admits?"
+      },
+      "layer3": {
+        "encoding_format":     ["none"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "none",
+        "deployment_maturity": "philosophical",
+        "licensing":           "n/a"
+      }
+    },
+
+    "husserl": {
+      "title": "Husserl",
+      "label": "HUSSERL",
+      "page": 8,
+      "publication_year": 1900,
+      "layer1": {
+        "stance": "Mind-inclusive",
+        "lineage": null,
+        "encoding_present": false,
+        "time_model": null
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "admits?",
+        "substance":             "admits",
+        "process_event":         "admits?",
+        "mereology":             "admits",
+        "dependence":            "admits",
+        "qualities":             "admits",
+        "roles":                 "does-not-admit?",
+        "information_artifacts": "admits?",
+        "fictional_objects":     "admits?",
+        "mental_entities":       "admits",
+        "social_entities":       "admits",
+        "possible_entities":     "admits?",
+        "boundaries":            "admits"
+      },
+      "layer3": {
+        "encoding_format":     ["none"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "none",
+        "deployment_maturity": "philosophical",
+        "licensing":           "n/a"
+      }
+    },
+
+    "bfo": {
+      "title": "BFO",
+      "label": "BFO",
+      "page": 9,
+      "publication_year": 2002,
+      "layer1": {
+        "stance": "Mind-independent",
+        "lineage": "Aristotelian",
+        "encoding_present": true,
+        "time_model": "Endurantist + Perdurantist"
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "does-not-admit",
+        "substance":             "admits",
+        "process_event":         "admits",
+        "mereology":             "admits",
+        "dependence":            "admits",
+        "qualities":             "admits",
+        "roles":                 "admits",
+        "information_artifacts": "admits",
+        "fictional_objects":     "does-not-admit",
+        "mental_entities":       "does-not-admit?",
+        "social_entities":       "admits?",
+        "possible_entities":     "does-not-admit",
+        "boundaries":            "admits"
+      },
+      "layer3": {
+        "encoding_format":     ["OWL2", "FOL/CLIF", "Common Logic"],
+        "reasoner_support":    true,
+        "editor_support":      true,
+        "domain_ecosystem":    "extensive",
+        "deployment_maturity": "production-deployed",
+        "licensing":           "open"
+      }
+    },
+
+    "dolce": {
+      "title": "DOLCE",
+      "label": "DOLCE",
+      "page": 10,
+      "publication_year": 2003,
+      "layer1": {
+        "stance": "Mind-inclusive",
+        "lineage": null,
+        "encoding_present": true,
+        "time_model": "Endurantist + Perdurantist"
+      },
+      "layer2": {
+        "universals":            "admits?",
+        "particulars":           "admits",
+        "tropes":                "admits",
+        "substance":             "admits",
+        "process_event":         "admits",
+        "mereology":             "admits",
+        "dependence":            "admits",
+        "qualities":             "admits",
+        "roles":                 "admits",
+        "information_artifacts": "admits",
+        "fictional_objects":     "does-not-admit?",
+        "mental_entities":       "admits",
+        "social_entities":       "admits",
+        "possible_entities":     "does-not-admit?",
+        "boundaries":            "admits?"
+      },
+      "layer3": {
+        "encoding_format":     ["OWL2", "FOL/CLIF"],
+        "reasoner_support":    true,
+        "editor_support":      true,
+        "domain_ecosystem":    "moderate",
+        "deployment_maturity": "production-deployed",
+        "licensing":           "open"
+      }
+    },
+
+    "sumo": {
+      "title": "SUMO",
+      "label": "SUMO",
+      "page": 11,
+      "publication_year": 2001,
+      "layer1": {
+        "stance": "Mind-independent",
+        "lineage": null,
+        "encoding_present": true,
+        "time_model": "Endurantist + Perdurantist"
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "does-not-admit?",
+        "substance":             "admits",
+        "process_event":         "admits",
+        "mereology":             "admits",
+        "dependence":            "admits?",
+        "qualities":             "admits",
+        "roles":                 "admits",
+        "information_artifacts": "admits",
+        "fictional_objects":     "does-not-admit?",
+        "mental_entities":       "admits",
+        "social_entities":       "admits",
+        "possible_entities":     "admits?",
+        "boundaries":            "admits?"
+      },
+      "layer3": {
+        "encoding_format":     ["KIF/SUO-KIF", "OWL2"],
+        "reasoner_support":    true,
+        "editor_support":      true,
+        "domain_ecosystem":    "extensive",
+        "deployment_maturity": "production-deployed",
+        "licensing":           "open"
+      }
+    },
+
+    "gfo": {
+      "title": "GFO",
+      "label": "GFO",
+      "page": 12,
+      "publication_year": 1999,
+      "layer1": {
+        "stance": "Mind-inclusive",
+        "lineage": null,
+        "encoding_present": true,
+        "time_model": "Endurantist + Perdurantist"
+      },
+      "layer2": {
+        "universals":            "admits",
+        "particulars":           "admits",
+        "tropes":                "admits",
+        "substance":             "admits",
+        "process_event":         "admits",
+        "mereology":             "admits",
+        "dependence":            "admits",
+        "qualities":             "admits",
+        "roles":                 "admits",
+        "information_artifacts": "admits",
+        "fictional_objects":     "does-not-admit?",
+        "mental_entities":       "admits",
+        "social_entities":       "admits",
+        "possible_entities":     "admits?",
+        "boundaries":            "admits?"
+      },
+      "layer3": {
+        "encoding_format":     ["OWL2", "FOL/CLIF"],
+        "reasoner_support":    true,
+        "editor_support":      true,
+        "domain_ecosystem":    "moderate",
+        "deployment_maturity": "research-projects",
+        "licensing":           "open"
+      }
+    },
+
+    "efo": {
+      "title": "EFO",
+      "label": "EFO",
+      "page": 13,
+      "publication_year": 2025,
+      "layer1": {
+        "stance": "Representational",
+        "lineage": null,
+        "encoding_present": true,
+        "time_model": null
+      },
+      "layer2": {
+        "universals":            "does-not-admit?",
+        "particulars":           "admits",
+        "tropes":                "does-not-admit?",
+        "substance":             "does-not-admit?",
+        "process_event":         "admits",
+        "mereology":             "admits?",
+        "dependence":            "admits",
+        "qualities":             "admits",
+        "roles":                 "does-not-admit?",
+        "information_artifacts": "admits",
+        "fictional_objects":     "admits",
+        "mental_entities":       "admits",
+        "social_entities":       "does-not-admit?",
+        "possible_entities":     "admits",
+        "boundaries":            "does-not-admit?"
+      },
+      "layer3": {
+        "encoding_format":     ["FOL/CLIF?"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "minimal",
+        "deployment_maturity": "academic-only",
+        "licensing":           "open?"
+      }
+    },
+
+    "glasersfeld": {
+      "title": "Radical Constructivism",
+      "label": "RADICAL CONSTRUCTIVISM",
+      "page": 14,
+      "publication_year": 1995,
+      "layer1": {
+        "stance": ["Non-Mind-independent", "Non-Mind-inclusive", "Non-Representational"],
+        "lineage": null,
+        "encoding_present": false,
+        "time_model": null
+      },
+      "layer2": {
+        "_note": "Radical Constructivism is a meta-position with no categorial scheme. Layer-2 questions about what it 'admits' do not apply in the same sense as for the other ontologies. All values null = not-applicable.",
+        "universals":            null,
+        "particulars":           null,
+        "tropes":                null,
+        "substance":             null,
+        "process_event":         null,
+        "mereology":             null,
+        "dependence":            null,
+        "qualities":             null,
+        "roles":                 null,
+        "information_artifacts": null,
+        "fictional_objects":     null,
+        "mental_entities":       null,
+        "social_entities":       null,
+        "possible_entities":     null,
+        "boundaries":            null
+      },
+      "layer3": {
+        "encoding_format":     ["none"],
+        "reasoner_support":    false,
+        "editor_support":      false,
+        "domain_ecosystem":    "none",
+        "deployment_maturity": "philosophical",
+        "licensing":           "n/a"
+      }
+    }
+
+  }
+}

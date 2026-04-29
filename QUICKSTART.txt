@@ -1,0 +1,23 @@
+QUICKSTART
+==========
+
+To preview the website locally:
+  → double-click index.html
+
+To deploy it as a public website:
+  → go to https://app.netlify.com/drop
+  → drag this entire folder onto the drop area
+  → wait 10 seconds, get a live URL
+
+To update the data later:
+  → edit ontology_descriptors.json
+  → run: python3 build.py
+  → re-drag the folder onto Netlify
+
+Note: the chooser includes a "view diagram →" link on every result card,
+opening that ontology's diagram in a new tab. The diagrams are pre-split
+in the diagrams/ folder. After regenerating the source PDF, run:
+  python3 split_pdf.py
+to refresh the per-ontology diagram files.
+
+For more detail, see README.md.
