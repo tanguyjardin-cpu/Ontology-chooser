@@ -296,11 +296,13 @@
     background: var(--ink);
     color: var(--paper);
     border-color: var(--ink);
+    font-weight: 600;
   }
   .filter-column .descriptor-row .controls button.mustnot.selected {
     background: var(--accent);
     color: var(--paper);
     border-color: var(--accent);
+    font-weight: 600;
   }
   .filter-column .descriptor-row .controls button.disabled {
     color: var(--disabled);
@@ -332,6 +334,7 @@
     background: var(--ink);
     color: var(--paper);
     border-color: var(--ink);
+    font-weight: 600;
   }
   .filter-column .pill-options button:hover { background: var(--paper-soft); }
   .filter-column .pill-options button.selected:hover { background: var(--ink); }
@@ -498,6 +501,31 @@
   }
   .no-results .suggestions button:hover .count { color: var(--paper); opacity: 0.7; }
 
+  /* Empty-state placeholder shown when no filters are active yet */
+  .no-filters-yet {
+    padding: 60px 0 40px;
+    text-align: center;
+  }
+  .no-filters-yet .headline {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .no-filters-yet .subtext {
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 16px;
+  }
+
+  /* Sticky count bar's "label" text when no filters are set */
+  .stickycount .count-label {
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 14px;
+  }
+
   /* Active filter chip */
   .chip {
     display: inline-flex;
@@ -510,6 +538,7 @@
     padding: 4px 10px 4px 12px;
     font-size: 14.8px;
     font-family: var(--mono);
+    font-weight: 600;
     letter-spacing: 0.02em;
   }
   .chip.exclude {
@@ -596,7 +625,7 @@
 </div>
 
 <div class="stickycount">
-  <div><span class="count" id="resultcount-num">14</span> of 14 ontologies match</div>
+  <div id="resultcount-text"><span class="count">—</span> <span class="count-label">no filters set yet</span></div>
   <a href="ontological-categories-v9.pdf" target="_blank" rel="noopener">view the full deck (PDF) &rarr;</a>
 </div>
 
@@ -816,7 +845,6 @@ function computeOptionCounts() {
   for (const facet of LAYER1_FACETS) {
     counts.layer1[facet.key] = {};
     for (const opt of facet.options) {
-      // Temporarily add this option, count, restore
       const currentSel = state.layer1[facet.key] || new Set();
       const wasIn = currentSel.has(opt);
       const trial = new Set(currentSel);
@@ -824,18 +852,20 @@ function computeOptionCounts() {
       const saved = state.layer1[facet.key];
       state.layer1[facet.key] = trial;
       counts.layer1[facet.key][String(opt)] = getMatching().length;
-      state.layer1[facet.key] = saved;
+      // Restore: delete when saved was undefined; else write back
+      if (saved === undefined) delete state.layer1[facet.key];
+      else                     state.layer1[facet.key] = saved;
     }
   }
   for (const facet of LAYER3_FACETS) {
     counts.layer3[facet.key] = {};
     if (facet.type === 'min-rank') {
-      // For min-rank, count how many would match at each level
       for (const opt of facet.options) {
         const saved = state.layer3[facet.key];
         state.layer3[facet.key] = opt;
         counts.layer3[facet.key][opt] = getMatching().length;
-        state.layer3[facet.key] = saved;
+        if (saved === undefined) delete state.layer3[facet.key];
+        else                     state.layer3[facet.key] = saved;
       }
     } else {
       for (const opt of facet.options) {
@@ -846,7 +876,8 @@ function computeOptionCounts() {
         const saved = state.layer3[facet.key];
         state.layer3[facet.key] = trial;
         counts.layer3[facet.key][String(opt)] = getMatching().length;
-        state.layer3[facet.key] = saved;
+        if (saved === undefined) delete state.layer3[facet.key];
+        else                     state.layer3[facet.key] = saved;
       }
     }
   }
@@ -1089,7 +1120,12 @@ function renderActiveFilters() {
   }
 
   const matching = getMatching();
-  document.getElementById('resultcount-num').textContent = matching.length;
+  const target = document.getElementById('resultcount-text');
+  if (!hasAnyFilter()) {
+    target.innerHTML = '<span class="count">&mdash;</span> <span class="count-label">no filters set yet</span>';
+  } else {
+    target.innerHTML = `<span class="count">${matching.length}</span> of 14 ontologies match`;
+  }
 }
 
 function makeChip(dim, val, onRemove, exclude=false) {
@@ -1100,9 +1136,25 @@ function makeChip(dim, val, onRemove, exclude=false) {
   return c;
 }
 
+function hasAnyFilter() {
+  if (Object.keys(state.layer1).length > 0) return true;
+  if (Object.keys(state.layer2).length > 0) return true;
+  if (Object.keys(state.layer3).length > 0) return true;
+  return false;
+}
+
 function renderResults() {
   const root = document.getElementById('results-list');
   root.innerHTML = '';
+
+  if (!hasAnyFilter()) {
+    root.innerHTML = '<div class="no-filters-yet">' +
+                     '<div class="headline">Choose at least one filter above</div>' +
+                     '<div class="subtext">Open any column to start narrowing the fourteen ontologies.</div>' +
+                     '</div>';
+    return;
+  }
+
   const matching = getMatching();
 
   if (matching.length === 0) {
