@@ -550,7 +550,7 @@
     gap: 6px;
     border: 1px solid var(--line);
     background: var(--ink);
-    color: var(--paper);
+    color: var(--link-blue);
     border-radius: 999px;
     padding: 4px 10px 4px 12px;
     font-size: 14.8px;
@@ -561,11 +561,12 @@
   .chip.exclude {
     background: var(--accent);
     border-color: var(--accent);
+    color: var(--link-blue);
   }
   .chip button {
     background: none;
     border: none;
-    color: inherit;
+    color: #fff;
     cursor: pointer;
     font-size: 16.5px;
     padding: 0 0 0 4px;
@@ -574,11 +575,43 @@
   }
   .chip button:hover { opacity: 1; }
   .chip .dim {
-    opacity: 0.55;
+    color: #fff;
     font-size: 11.8px;
     letter-spacing: 0.04em;
     text-transform: uppercase;
     margin-right: 2px;
+    font-weight: 400;
+  }
+
+  /* Clear-all button in sticky count bar */
+  .stickycount .clear-all {
+    background: none;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink);
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: all 120ms;
+    white-space: nowrap;
+  }
+  .stickycount .clear-all:hover {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .stickycount .clear-all:disabled {
+    color: var(--disabled);
+    border-color: var(--line-soft);
+    cursor: not-allowed;
+    background: none;
+  }
+  .stickycount .right-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
   }
 
   /* Footer */
@@ -643,7 +676,10 @@
 
 <div class="stickycount">
   <div id="resultcount-text"><span class="count">—</span> <span class="count-label">no filters set yet</span></div>
-  <a href="ontological-categories-v9.pdf" target="_blank" rel="noopener">View all diagrams without filtering &rarr;</a>
+  <div class="right-controls">
+    <button class="clear-all" id="clear-all-btn" disabled onclick="clearAllFilters()">Clear all filters</button>
+    <a href="ontological-categories-v9.pdf" target="_blank" rel="noopener">View all diagrams without filtering &rarr;</a>
+  </div>
 </div>
 
 <div class="grid">
@@ -774,6 +810,14 @@ const state = {
   layer3: {},      // { facet_key: Set of selected option values, or single value for min-rank }
   openColumn: null // 'l1' | 'l2' | 'l3' | null
 };
+
+function clearAllFilters() {
+  state.layer1 = {};
+  state.layer2 = {};
+  state.layer3 = {};
+  state.openColumn = null;
+  render();
+}
 
 /* ════════════════════════════════════════════════════════════════════
    HELPERS — clean a value of trailing '?', test admission, etc.
@@ -912,6 +956,9 @@ function render() {
   renderFilters();
   renderResults();
   renderActiveFilters();
+  // Enable/disable the Clear all button based on whether any filter is active
+  const btn = document.getElementById('clear-all-btn');
+  if (btn) btn.disabled = !hasAnyFilter();
 }
 
 function renderFilters() {
