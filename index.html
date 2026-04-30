@@ -155,7 +155,8 @@
     color: var(--accent);
     margin-right: 4px;
   }
-  .stickycount a {
+  .stickycount a,
+  .stickycount .view-all-btn {
     color: var(--link-blue);
     text-decoration: none;
     border-bottom: 1px solid transparent;
@@ -163,8 +164,15 @@
     font-family: var(--serif);
     font-weight: 600;
     font-style: italic;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    padding: 0;
+    cursor: pointer;
   }
-  .stickycount a:hover { border-bottom-color: var(--link-blue); }
+  .stickycount a:hover,
+  .stickycount .view-all-btn:hover { border-bottom-color: var(--link-blue); }
 
   /* ────────────────────────────────────────────────────────────
      Filter panel — three columns at the top of the page,
@@ -678,7 +686,7 @@
   <div id="resultcount-text"><span class="count">—</span> <span class="count-label">no filters set yet</span></div>
   <div class="right-controls">
     <button class="clear-all" id="clear-all-btn" disabled onclick="clearAllFilters()">Clear all filters</button>
-    <a href="ontological-categories-v9.pdf" target="_blank" rel="noopener">View all diagrams without filtering &rarr;</a>
+    <button class="view-all-btn" id="view-all-btn" onclick="viewAllOntologies()">View all ontologies &rarr;</button>
   </div>
 </div>
 
@@ -808,7 +816,8 @@ const state = {
   layer1: {},      // { facet_key: Set of selected option values }
   layer2: {},      // { descriptor_key: 'must' | 'must-not' | undefined }
   layer3: {},      // { facet_key: Set of selected option values, or single value for min-rank }
-  openColumn: null // 'l1' | 'l2' | 'l3' | null
+  openColumn: null, // 'l1' | 'l2' | 'l3' | null
+  showAll: false   // true when "View all ontologies" is clicked
 };
 
 function clearAllFilters() {
@@ -816,6 +825,12 @@ function clearAllFilters() {
   state.layer2 = {};
   state.layer3 = {};
   state.openColumn = null;
+  state.showAll = false;
+  render();
+}
+
+function viewAllOntologies() {
+  state.showAll = true;
   render();
 }
 
@@ -958,7 +973,7 @@ function render() {
   renderActiveFilters();
   // Enable/disable the Clear all button based on whether any filter is active
   const btn = document.getElementById('clear-all-btn');
-  if (btn) btn.disabled = !hasAnyFilter();
+  if (btn) btn.disabled = !hasAnyFilter() && !state.showAll;
 }
 
 function renderFilters() {
@@ -1179,7 +1194,9 @@ function renderActiveFilters() {
 
   const matching = getMatching();
   const target = document.getElementById('resultcount-text');
-  if (!hasAnyFilter()) {
+  if (state.showAll) {
+    target.innerHTML = '<span class="count">14</span> of 14 ontologies shown';
+  } else if (!hasAnyFilter()) {
     target.innerHTML = '<span class="count">&mdash;</span> <span class="count-label">no filters set yet</span>';
   } else {
     target.innerHTML = `<span class="count">${matching.length}</span> of 14 ontologies match`;
@@ -1205,6 +1222,14 @@ function renderResults() {
   const root = document.getElementById('results-list');
   root.innerHTML = '';
 
+  if (state.showAll) {
+    const all = Object.entries(DATA.ontologies).map(([k, o]) => ({ key: k, ...o }));
+    for (const o of all) {
+      root.appendChild(makeCard(o));
+    }
+    return;
+  }
+
   if (!hasAnyFilter()) {
     root.innerHTML = '<div class="no-filters-yet">' +
                      '<div class="subtext">Open any column to start narrowing the fourteen ontologies.</div>' +
@@ -1223,6 +1248,11 @@ function renderResults() {
   }
 
   for (const o of matching) {
+    root.appendChild(makeCard(o));
+  }
+}
+
+function makeCard(o) {
     const card = document.createElement('div');
     card.className = 'ontology-card';
     const stance = o.layer1.stance;
@@ -1243,16 +1273,14 @@ function renderResults() {
     const badgeHtml = allBadges
       .map(b => `<span class="badge${b.neg ? ' neg' : ''}">${b.text}</span>`).join('');
 
-    // Layer 2 mini-summary: list 4-5 most informative commitments
     const commitments = summariseCommitments(o);
 
     card.innerHTML = `
-      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view diagram &rarr;</a></div>
+      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a></div>
       <div class="badges">${badgeHtml}</div>
       <div class="summary">${commitments}</div>
     `;
-    root.appendChild(card);
-  }
+    return card;
 }
 
 function renderSuggestions() {
@@ -1372,6 +1400,7 @@ document.body.addEventListener('click', (e) => {
     // If clicking the already-selected value, deselect it
     if (state.layer1[key] === val) delete state.layer1[key];
     else state.layer1[key] = val;
+    state.showAll = false;
     render();
     return;
   }
@@ -1381,6 +1410,7 @@ document.body.addEventListener('click', (e) => {
     // If clicking the already-selected value, deselect it
     if (state.layer2[key] === val) delete state.layer2[key];
     else state.layer2[key] = val;
+    state.showAll = false;
     render();
     return;
   }
@@ -1400,6 +1430,7 @@ document.body.addEventListener('click', (e) => {
       else state.layer3[key].add(realOpt);
       if (state.layer3[key].size === 0) delete state.layer3[key];
     }
+    state.showAll = false;
     render();
     return;
   }
