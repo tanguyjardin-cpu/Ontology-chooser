@@ -529,9 +529,11 @@
     margin-bottom: 8px;
   }
   .no-filters-yet .subtext {
-    font-style: italic;
-    color: var(--ink-faint);
-    font-size: 16px;
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--ink);
+    font-style: normal;
   }
 
   /* Sticky count bar's "label" text when no filters are set */
@@ -682,17 +684,42 @@ const DATA = {"ontologies": {"plato": {"title": "Plato", "label": "PLATO", "page
    UI VOCABULARIES — human-readable labels for descriptor keys
    ════════════════════════════════════════════════════════════════════ */
 
-const LAYER1_FACETS = [
-  { key: 'stance',         label: 'Stance',
-    options: ['Mind-independent', 'Mind-inclusive', 'Representational',
-              'Non-Mind-independent', 'Non-Mind-inclusive', 'Non-Representational'] },
-  { key: 'lineage',        label: 'Lineage',
-    options: ['Aristotelian'] },
-  { key: 'encoding_present', label: 'Has formal encoding',
-    options: [true], optionLabels: ['Formalized'] },
-  { key: 'time_model',     label: 'Time model',
-    options: ['Endurantist', 'Endurantist + Perdurantist'] }
+// Layer 1 is now structured as 7 yes/no descriptors.
+// Each has a key, a display label, and a predicate that tests whether
+// a given ontology has that property. The yes/no controls in the UI
+// map to "must have" / "must not have" semantics: yes = predicate must
+// return true; no = predicate must return false; neither = don't care.
+const LAYER1_DESCRIPTORS = [
+  { key: 'mind_independent',
+    label: 'Mind-independent',
+    test: o => stanceList(o).includes('Mind-independent') },
+  { key: 'mind_inclusive',
+    label: 'Mind-inclusive',
+    test: o => stanceList(o).includes('Mind-inclusive') },
+  { key: 'representational',
+    label: 'Representational',
+    test: o => stanceList(o).includes('Representational') },
+  { key: 'aristotelian',
+    label: 'Aristotelian',
+    test: o => o.layer1.lineage === 'Aristotelian' },
+  { key: 'formalised',
+    label: 'Formalised',
+    test: o => o.layer1.encoding_present === true },
+  { key: 'endurantist',
+    label: 'Endurantist',
+    test: o => o.layer1.time_model === 'Endurantist'
+            || o.layer1.time_model === 'Endurantist + Perdurantist' },
+  { key: 'perdurantist',
+    label: 'Perdurantist',
+    test: o => o.layer1.time_model === 'Endurantist + Perdurantist' },
 ];
+
+// Helper: return the stance(s) of an ontology as a list (it can be a string
+// or an array — Glasersfeld has multiple Non- stances).
+function stanceList(o) {
+  const s = o.layer1.stance;
+  return Array.isArray(s) ? s : [s];
+}
 
 const LAYER2_DESCRIPTORS = [
   ['universals',            'Universals'],
@@ -766,21 +793,6 @@ function doesNotAdmit(ontology, descriptor) {
   return v === 'does-not-admit';
 }
 
-function l1MatchesFacet(ontology, facet, selectedSet) {
-  if (!selectedSet || selectedSet.size === 0) return true;
-  const v = ontology.layer1[facet.key];
-  // value can be a list (e.g. Glasersfeld's stance is 3 negation pills)
-  if (Array.isArray(v)) {
-    for (const item of v) if (selectedSet.has(item)) return true;
-    return false;
-  }
-  // for booleans / scalar
-  if (selectedSet.has(v)) return true;
-  // For single-value facets, "Aristotelian"/"Endurantist" are inclusion checks;
-  // null values (i.e. ontology takes no position) don't match.
-  return false;
-}
-
 function l3MatchesFacet(ontology, facet, selection) {
   if (!selection || (selection instanceof Set && selection.size === 0)) return true;
   const raw = ontology.layer3[facet.key];
@@ -817,13 +829,11 @@ function ontologyMatches(ontology, ignoreFilter = null) {
   // ignoreFilter: { layer, key, opt } — temporarily remove this one filter
   // (used for "remove this filter to see N results" suggestions)
 
-  for (const facet of LAYER1_FACETS) {
-    let sel = state.layer1[facet.key];
-    if (ignoreFilter && ignoreFilter.layer === 1 && ignoreFilter.key === facet.key) {
-      sel = new Set([...sel].filter(o => o !== ignoreFilter.opt));
-      if (sel.size === 0) sel = null;
-    }
-    if (!l1MatchesFacet(ontology, facet, sel)) return false;
+  for (const desc of LAYER1_DESCRIPTORS) {
+    let s = state.layer1[desc.key];
+    if (ignoreFilter && ignoreFilter.layer === 1 && ignoreFilter.key === desc.key) s = undefined;
+    if (s === 'yes' && !desc.test(ontology)) return false;
+    if (s === 'no'  &&  desc.test(ontology)) return false;
   }
   for (const [key, label] of LAYER2_DESCRIPTORS) {
     let s = state.layer2[key];
@@ -857,19 +867,14 @@ function getMatching(ignoreFilter = null) {
    how many match WITH it). */
 function computeOptionCounts() {
   const counts = { layer1: {}, layer3: {} };
-  for (const facet of LAYER1_FACETS) {
-    counts.layer1[facet.key] = {};
-    for (const opt of facet.options) {
-      const currentSel = state.layer1[facet.key] || new Set();
-      const wasIn = currentSel.has(opt);
-      const trial = new Set(currentSel);
-      if (!wasIn) trial.add(opt);
-      const saved = state.layer1[facet.key];
-      state.layer1[facet.key] = trial;
-      counts.layer1[facet.key][String(opt)] = getMatching().length;
-      // Restore: delete when saved was undefined; else write back
-      if (saved === undefined) delete state.layer1[facet.key];
-      else                     state.layer1[facet.key] = saved;
+  for (const desc of LAYER1_DESCRIPTORS) {
+    counts.layer1[desc.key] = {};
+    for (const trial of ['yes', 'no']) {
+      const saved = state.layer1[desc.key];
+      state.layer1[desc.key] = trial;
+      counts.layer1[desc.key][trial] = getMatching().length;
+      if (saved === undefined) delete state.layer1[desc.key];
+      else                     state.layer1[desc.key] = saved;
     }
   }
   for (const facet of LAYER3_FACETS) {
@@ -957,44 +962,39 @@ function renderColumn(id, title, renderPanel, renderSummary) {
   return col;
 }
 
-// ── L1: Stance & Profile (4 facets, each with multi-pill options) ────
+// ── L1: Stance & Profile (7 yes/no descriptors) ────────────────────
 function renderL1Panel(counts, panel) {
-  for (const facet of LAYER1_FACETS) {
-    const sel = state.layer1[facet.key] || new Set();
+  for (const desc of LAYER1_DESCRIPTORS) {
+    const cur = state.layer1[desc.key]; // 'yes' | 'no' | undefined
+    const yesCount = counts.layer1[desc.key].yes;
+    const noCount  = counts.layer1[desc.key].no;
+    const yesDisabled = yesCount === 0 && cur !== 'yes';
+    const noDisabled  = noCount  === 0 && cur !== 'no';
     const row = document.createElement('div');
     row.className = 'descriptor-row';
-    row.innerHTML = `<div class="desc-name">${facet.label}</div><div></div>`;
-    const opts = document.createElement('div');
-    opts.className = 'pill-options';
-    facet.options.forEach((opt, idx) => {
-      const label = (facet.optionLabels && facet.optionLabels[idx]) || String(opt);
-      const isSel = sel.has(opt);
-      const count = counts.layer1[facet.key][String(opt)];
-      const disabled = count === 0 && !isSel;
-      const btn = document.createElement('button');
-      btn.className = (isSel ? 'selected' : '') + (disabled ? ' disabled' : '');
-      btn.dataset.action = 'l1-toggle';
-      btn.dataset.key = facet.key;
-      btn.dataset.opt = String(opt);
-      if (disabled) btn.disabled = true;
-      btn.innerHTML = `${label} <span style="opacity:0.6;font-size:10.5px">${count}</span>`;
-      opts.appendChild(btn);
-    });
-    row.appendChild(opts);
+    row.innerHTML = `
+      <div class="desc-name">${desc.label}</div>
+      <div class="controls">
+        <button class="must ${cur === 'yes' ? 'selected' : ''} ${yesDisabled ? 'disabled' : ''}"
+                data-action="l1-set" data-key="${desc.key}" data-val="yes"
+                ${yesDisabled ? 'disabled' : ''}>yes</button>
+        <button class="mustnot ${cur === 'no' ? 'selected' : ''} ${noDisabled ? 'disabled' : ''}"
+                data-action="l1-set" data-key="${desc.key}" data-val="no"
+                ${noDisabled ? 'disabled' : ''}>no</button>
+      </div>
+    `;
     panel.appendChild(row);
   }
 }
 
 function renderL1Summary() {
   const lines = [];
-  for (const facet of LAYER1_FACETS) {
-    const sel = state.layer1[facet.key];
-    if (sel && sel.size > 0) {
-      for (const opt of sel) {
-        const idx = facet.options.indexOf(opt);
-        const label = (facet.optionLabels && facet.optionLabels[idx]) || String(opt);
-        lines.push(`<span class="chosen"><span class="desc">${facet.label}:</span><span class="val">${label}</span></span>`);
-      }
+  for (const desc of LAYER1_DESCRIPTORS) {
+    const cur = state.layer1[desc.key];
+    if (cur === 'yes') {
+      lines.push(`<span class="chosen"><span class="desc">${desc.label}:</span><span class="val">yes</span></span>`);
+    } else if (cur === 'no') {
+      lines.push(`<span class="chosen"><span class="desc">${desc.label}:</span><span class="val exclude">no</span></span>`);
     }
   }
   return lines.join('');
@@ -1090,16 +1090,12 @@ function renderActiveFilters() {
 
   const chips = [];
   // Layer 1
-  for (const facet of LAYER1_FACETS) {
-    const sel = state.layer1[facet.key];
-    if (sel) for (const opt of sel) {
-      const idx = facet.options.indexOf(opt);
-      const label = (facet.optionLabels && facet.optionLabels[idx]) || String(opt);
-      chips.push(makeChip(facet.label, label, () => {
-        state.layer1[facet.key].delete(opt);
-        if (state.layer1[facet.key].size === 0) delete state.layer1[facet.key];
-        render();
-      }));
+  for (const desc of LAYER1_DESCRIPTORS) {
+    const cur = state.layer1[desc.key];
+    if (cur === 'yes') {
+      chips.push(makeChip(desc.label, 'yes', () => { delete state.layer1[desc.key]; render(); }));
+    } else if (cur === 'no') {
+      chips.push(makeChip(desc.label, 'no', () => { delete state.layer1[desc.key]; render(); }, true));
     }
   }
   // Layer 2
@@ -1164,7 +1160,6 @@ function renderResults() {
 
   if (!hasAnyFilter()) {
     root.innerHTML = '<div class="no-filters-yet">' +
-                     '<div class="headline">Choose at least one filter above</div>' +
                      '<div class="subtext">Open any column to start narrowing the fourteen ontologies.</div>' +
                      '</div>';
     return;
@@ -1193,7 +1188,10 @@ function renderResults() {
     });
     if (o.layer1.lineage) allBadges.push({ text: o.layer1.lineage });
     if (o.layer1.encoding_present) allBadges.push({ text: 'Formalized' });
-    if (o.layer1.time_model)       allBadges.push({ text: o.layer1.time_model });
+    if (o.layer1.time_model) {
+      const tmDisplay = o.layer1.time_model === 'Endurantist + Perdurantist' ? '3D + 4D' : o.layer1.time_model;
+      allBadges.push({ text: tmDisplay });
+    }
 
     const badgeHtml = allBadges
       .map(b => `<span class="badge${b.neg ? ' neg' : ''}">${b.text}</span>`).join('');
@@ -1216,14 +1214,11 @@ function renderSuggestions() {
   // For each currently-active filter, compute how many would match if we removed it
   const suggestions = [];
 
-  for (const facet of LAYER1_FACETS) {
-    const sel = state.layer1[facet.key];
-    if (sel) for (const opt of sel) {
-      const n = getMatching({ layer: 1, key: facet.key, opt }).length;
-      if (n > 0) suggestions.push({ label: `Remove "${opt}" filter`, count: n,
-        action: () => { state.layer1[facet.key].delete(opt);
-                        if (state.layer1[facet.key].size === 0) delete state.layer1[facet.key];
-                        render(); } });
+  for (const desc of LAYER1_DESCRIPTORS) {
+    if (state.layer1[desc.key]) {
+      const n = getMatching({ layer: 1, key: desc.key }).length;
+      if (n > 0) suggestions.push({ label: `Remove "${desc.label}" requirement`, count: n,
+        action: () => { delete state.layer1[desc.key]; render(); } });
     }
   }
   for (const [key, label] of LAYER2_DESCRIPTORS) {
@@ -1325,12 +1320,11 @@ document.body.addEventListener('click', (e) => {
     return;
   }
 
-  if (action === 'l1-toggle') {
-    if (!state.layer1[key]) state.layer1[key] = new Set();
-    const realOpt = (opt === 'true') ? true : (opt === 'false' ? false : opt);
-    if (state.layer1[key].has(realOpt)) state.layer1[key].delete(realOpt);
-    else state.layer1[key].add(realOpt);
-    if (state.layer1[key].size === 0) delete state.layer1[key];
+  if (action === 'l1-set') {
+    const val = t.dataset.val; // 'yes' | 'no'
+    // If clicking the already-selected value, deselect it
+    if (state.layer1[key] === val) delete state.layer1[key];
+    else state.layer1[key] = val;
     render();
     return;
   }
