@@ -1,17 +1,12 @@
 """
-Ontological categories PDF — v5
-Precise fixes:
-- Plato: participation curve goes UNDER L2 boxes (y > L2y+L2h), neat cubic Bezier
-- Plato: dbox labels use bigger pad so text can't reach border
-- Aristotle: Secondary Substance box taller; Soul box taller with more pad
-- EFO: L0 box taller (3 lines need more room); intentionality arrow:
-  starts left of Concept-descending arrow, goes UNDER L2 boxes to
-  Physical Entity L1 bottom centre; label placed clearly beside curve
+Ontological categories PDF — v9 + watermark
+Watermark: © Tanguy Wettengel — all rights reserved
+Bottom-right corner, small italic grey, on every page.
 """
 import math
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.colors import black, white
+from reportlab.lib.colors import black, white, Color
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 
@@ -45,7 +40,6 @@ def mono(c,x,y,s,size=7):
     c.drawCentredString(x,ry(y),s)
 
 def box(c,x,y,w,h,lw=1.0,dash=None):
-    """White-filled box — drawn AFTER any lines so border occludes overruns."""
     c.setLineWidth(lw)
     c.setDash(dash if dash else [])
     c.setStrokeColor(black); c.setFillColor(white)
@@ -56,7 +50,6 @@ def dbox(c,x,y,w,h,lw=0.8):
     box(c,x,y,w,h,lw=lw,dash=[4,3])
 
 def boxlabel(c,cx,y_top,h,lines,pad=11):
-    """Distribute lines vertically inside box with generous top/bottom pad."""
     n=len(lines)
     slot=(h-2*pad)/n
     for i,(s,size,bold,italic) in enumerate(lines):
@@ -81,7 +74,6 @@ def darrow(c,x1,y1,x2,y2,lw=0.8):
     c.line(x1,ry(y1),x2,ry(y2)); c.setDash([]); _head(c,x2,y2,ang)
 
 def cubic(c,x1,y1,cx1,cy1,cx2,cy2,x2,y2,lw=0.8,dash=False):
-    """Draw cubic Bezier (no arrowhead)."""
     c.setLineWidth(lw); c.setStrokeColor(black)
     if dash: c.setDash([4,3])
     else: c.setDash([])
@@ -91,7 +83,6 @@ def cubic(c,x1,y1,cx1,cy1,cx2,cy2,x2,y2,lw=0.8,dash=False):
     c.drawPath(p,fill=0,stroke=1); c.setDash([])
 
 def cubic_arrow(c,x1,y1,cx1,cy1,cx2,cy2,x2,y2,lw=0.8,dash=False):
-    """Cubic Bezier with arrowhead at end. Tangent from ctrl2→end."""
     cubic(c,x1,y1,cx1,cy1,cx2,cy2,x2,y2,lw=lw,dash=dash)
     ang=math.degrees(math.atan2(ry(y2)-ry(cy2),x2-cx2))
     _head(c,x2,y2,ang)
@@ -103,55 +94,37 @@ def header(c,abbr,full,author):
     c.setLineWidth(1.0); c.setStrokeColor(black)
     c.line(MAR,ry(52),W-MAR,ry(52))
 
-
 def pill(c, x_right, y_top, label, height=12, pad_x=7, font_size=7.0):
-    """
-    Draw a small rounded-rectangle pill with `label` inside.
-    Positioned so its RIGHT edge is at x_right and TOP edge is at y_top
-    (in top-down coordinates, where y=0 is the top of the page).
-    Returns the pill's left x-coordinate (useful for aligning).
-    """
-    # Measure text width
     fn = fname(bold=True)
     text_w = pdfmetrics.stringWidth(label, fn, font_size)
     pill_w = text_w + 2*pad_x
     x_left = x_right - pill_w
-    # Draw rounded rect (in PDF, y is bottom-up, so ry(y_top + height) = bottom)
     y_bottom_pdf = ry(y_top + height)
     c.setLineWidth(0.55)
-    c.setStrokeColor(black)
-    c.setFillColor(white)
-    c.roundRect(x_left, y_bottom_pdf, pill_w, height,
-                radius=height/2, stroke=1, fill=1)
-    # Centre the text vertically inside the pill.
-    # Baseline sits ~0.32*size above the pill's bottom in PDF coords.
+    c.setStrokeColor(black); c.setFillColor(white)
+    c.roundRect(x_left, y_bottom_pdf, pill_w, height, radius=height/2, stroke=1, fill=1)
     text_y_pdf = y_bottom_pdf + (height - font_size) / 2 + font_size * 0.22
-    c.setFillColor(black)
-    c.setFont(fn, font_size)
+    c.setFillColor(black); c.setFont(fn, font_size)
     c.drawString(x_left + pad_x, text_y_pdf, label)
     return x_left
 
-
 def badges(c, labels):
-    """
-    Draw a vertical stack of pill-badges in the top-right header zone.
-    labels: list of strings, drawn top-to-bottom in given order.
-    Right edge anchored at W-MAR; top edge at y=6.
-    """
-    if not labels:
-        return
+    if not labels: return
     y = 6
-    row_h = 14   # pill height + small vertical gap
+    row_h = 14
     for lbl in labels:
         pill(c, W - MAR, y, lbl, height=12, pad_x=7, font_size=7.0)
         y += row_h
 
+def draw_watermark(c):
+    """Bottom-right watermark — unobtrusive light grey italic."""
+    c.saveState()
+    c.setFillColor(Color(0.55, 0.55, 0.55, alpha=1))
+    c.setFont('SI', 7.5)
+    c.drawRightString(W - MAR, 10, '\u00a9 Tanguy Wettengel \u2014 all rights reserved')
+    c.restoreState()
 
-# ── Badge assignments per ontology ───────────────────────────────────────
-# Stance: Mind-independent / Mind-inclusive / Representational
-# Lineage: Aristotelian (when present, not on Aristotle himself)
-# Encoding: Formalized (when present)
-# Time model: Endurantist / Endurantist + Perdurantist (when present)
+# ── Badge assignments ─────────────────────────────────────────────────────
 BADGES = {
     'plato':       ['Mind-independent'],
     'aristotle':   ['Mind-independent', 'Endurantist'],
@@ -169,21 +142,18 @@ BADGES = {
     'glasersfeld': ['Non-Mind-independent', 'Non-Mind-inclusive', 'Non-Representational'],
 }
 
-
-T0=82
-
+T0 = 82
 
 # ══════════════════════════════════════════════════════════════════════════
 # PAGE 1 — PLATO
 # ══════════════════════════════════════════════════════════════════════════
 def page_plato(c):
     header(c,'PLATO',
-           'Phaedo  ·  Republic  ·  Parmenides  ·  Sophist  ·  Timaeus',
-           'c. 428–348 BCE')
+           'Phaedo  \u00b7  Republic  \u00b7  Parmenides  \u00b7  Sophist  \u00b7  Timaeus',
+           'c. 428\u2013348 BCE')
     badges(c, BADGES['plato'])
     T=T0
 
-    # L0
     L0w=260; L0h=52; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
@@ -213,7 +183,6 @@ def page_plato(c):
 
     L2y=L1y+L1h+28; L2h=76
 
-    # L2 under Forms
     F2w=(F_w-10)//2
     F2xs=[F_x, F_x+F2w+10]
     F2cxs=[x+F2w//2 for x in F2xs]
@@ -231,7 +200,6 @@ def page_plato(c):
         box(c,F2xs[i],L2y,F2w,L2h,lw=0.9)
         boxlabel(c,F2cxs[i],L2y,L2h,lines)
 
-    # L2 under Sensibles
     S2w=(S_w-20)//3
     S2xs=[S_x+i*(S2w+10) for i in range(3)]
     S2cxs=[x+S2w//2 for x in S2xs]
@@ -245,19 +213,17 @@ def page_plato(c):
          ('participate in Forms',7.5,False,True),
          ('imperfectly',7.5,False,True)],
         [('Images / Shadows',10,True,False),
-         ('least real — copies',7.5,False,True),
+         ('least real \u2014 copies',7.5,False,True),
          ('of copies (Republic)',7.5,False,True)],
     ]
     for i,lines in enumerate(S2data):
         box(c,S2xs[i],L2y,S2w,L2h,lw=0.9)
         boxlabel(c,S2cxs[i],L2y,L2h,lines)
 
-    # ── Dotted boxes Sophist + Timaeus: pushed down to give room for arc ──
-    DB_gap=50          # increased from 18 to 50 to leave space for the arc
+    DB_gap=50
     DB_y=L2y+L2h+DB_gap
     DB_h=L2h
 
-    # Sophist: centred on The Good (F2xs[0])
     soph_w=F2w; soph_x=F2xs[0]
     dbox(c,soph_x,DB_y,soph_w,DB_h,lw=0.8)
     boxlabel(c,soph_x+soph_w//2,DB_y,DB_h,[
@@ -266,7 +232,6 @@ def page_plato(c):
         ('(heterotes), not nothing',7.5,False,True),
     ],pad=14)
 
-    # Timaeus: centred on Images/Shadows (S2xs[2])
     tim_w=S2w; tim_x=S2xs[2]
     dbox(c,tim_x,DB_y,tim_w,DB_h,lw=0.8)
     boxlabel(c,tim_x+tim_w//2,DB_y,DB_h,[
@@ -275,31 +240,23 @@ def page_plato(c):
         ('space / substrate',7.5,False,True),
     ],pad=14)
 
-    # ── Participation arc: Natural Bodies BOTTOM → The Good BOTTOM ──────────
-    # Both boxes have their bottom at y=L2y+L2h=320 (same y).
-    # The curve dips DOWN symmetrically into the space above the DB boxes,
-    # forming a clean rounded U-shape between the two bottom points.
-    # NB bottom-centre: (540, 320)   Good bottom-centre: (99, 320)
-    # Arc dips to y=350 (well above new DB_y=370), producing a neat bow.
-    NB_bot_cx   = S2cxs[0]          # 540
-    Good_bot_cx = F2cxs[0]          # 99
-    bot_y       = L2y + L2h          # 320  (same for both)
-    dip_y       = bot_y + 32         # 352  — depth of the bow, above DB_y=370
+    NB_bot_cx   = S2cxs[0]
+    Good_bot_cx = F2cxs[0]
+    bot_y       = L2y + L2h
+    dip_y       = bot_y + 32
 
     cubic_arrow(c,
-        NB_bot_cx,      bot_y,         # start: NB bottom centre     (540, 320)
-        NB_bot_cx,      dip_y,         # ctrl1: pull straight down   (540, 352)
-        Good_bot_cx,    dip_y,         # ctrl2: symmetric other side (99,  352)
-        Good_bot_cx,    bot_y,         # end:   Good bottom centre   (99,  320)
+        NB_bot_cx, bot_y, NB_bot_cx, dip_y,
+        Good_bot_cx, dip_y, Good_bot_cx, bot_y,
         lw=0.9, dash=True)
 
-    # Label at the bottom of the arc (midpoint x, just above dip)
-    # x midpoint = (540+99)//2 = 319, y = dip_y - 2 (sits on the curve)
-    lbl_cx = (NB_bot_cx + Good_bot_cx) // 2    # 319
+    lbl_cx = (NB_bot_cx + Good_bot_cx) // 2
     txt(c, lbl_cx, dip_y + 12, 'participation  (methexis)', size=8, bold=True, italic=True)
 
     mono(c,W/2,DB_y+DB_h+14,
-         'Two-world ontology: intelligible realm (fully real) vs visible realm (becoming)  ·  Republic VI-VII')
+         'Two-world ontology: intelligible realm (fully real) vs visible realm (becoming)  \u00b7  Republic VI-VII')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -307,25 +264,23 @@ def page_plato(c):
 # ══════════════════════════════════════════════════════════════════════════
 def page_aristotle(c):
     header(c,'ARISTOTLE',
-           'Categories  ·  Metaphysics  ·  De Anima',
-           '384–322 BCE')
+           'Categories  \u00b7  Metaphysics  \u00b7  De Anima',
+           '384\u2013322 BCE')
     badges(c, BADGES['aristotle'])
     T=T0
 
-    # L0 Being — 3 text lines, needs generous height
     L0w=250; L0h=64; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
         ('Being',14,True,False),
-        ('on · pollachos legetai',8,False,True),
+        ('on \u00b7 pollachos legetai',8,False,True),
         ('said in many ways',8,False,True),
     ],pad=10)
 
-    # cross-cut note
     note_y=T+L0h+4; note_h=22
     dbox(c,L0x-30,note_y,L0w+60,note_h,lw=0.6)
     boxlabel(c,W/2,note_y,note_h,[
-        ('cross-cut: Actuality (energeia) vs Potentiality (dynamis)  ·  Metaph. IX',7,False,True),
+        ('cross-cut: Actuality (energeia) vs Potentiality (dynamis)  \u00b7  Metaph. IX',7,False,True),
     ],pad=6)
 
     L1y=T+L0h+note_h+20; L1h=46
@@ -339,19 +294,17 @@ def page_aristotle(c):
     box(c,Sub_x,L1y,Sub_w,L1h,lw=1.2)
     boxlabel(c,Sub_cx,L1y,L1h,[
         ('Substance',13,True,False),
-        ('ousia · exists in its own right',8,False,True),
+        ('ousia \u00b7 exists in its own right',8,False,True),
     ])
     box(c,Acc_x,L1y,Acc_w,L1h,lw=1.2)
     boxlabel(c,Acc_cx,L1y,L1h,[
         ('Accident',13,True,False),
-        ('symbebekos · exists only in a subject · nine categories',8,False,True),
+        ('symbebekos \u00b7 exists only in a subject \u00b7 nine categories',8,False,True),
     ])
 
-    L2y=L1y+L1h+34; L2h=88   # tall boxes → text well inside
+    L2y=L1y+L1h+34; L2h=88
 
-    # Primary + Secondary Substance — centred under Substance box
-    # Use wider boxes with slightly reduced font to ensure no overflow
-    PS_w=(Sub_w-8)//2   # 116pt each — wider than before
+    PS_w=(Sub_w-8)//2
     PS_xs=[Sub_x, Sub_x+PS_w+8]
     PS_cxs=[x+PS_w//2 for x in PS_xs]
 
@@ -361,7 +314,7 @@ def page_aristotle(c):
     box(c,PS_xs[0],L2y,PS_w,L2h,lw=0.95)
     boxlabel(c,PS_cxs[0],L2y,L2h,[
         ('Primary Substance',9.5,True,False),
-        ('tode ti · this individual',8,False,True),
+        ('tode ti \u00b7 this individual',8,False,True),
         ('e.g. Socrates, this horse',7.5,False,True),
     ],pad=14)
 
@@ -372,8 +325,6 @@ def page_aristotle(c):
         ('e.g. Human, Animal',7.5,False,True),
     ],pad=14)
 
-    # Soul — dashed, placed below Primary Substance
-    # Height must hold 4 lines comfortably
     soul_h=96; soul_w=PS_w; soul_x=PS_xs[0]; soul_y=L2y+L2h+24
     dbox(c,soul_x,soul_y,soul_w,soul_h,lw=0.9)
     boxlabel(c,PS_cxs[0],soul_y,soul_h,[
@@ -382,11 +333,9 @@ def page_aristotle(c):
         ('natural body capable of life',7.5,False,True),
         ('not itself a substance',7.5,False,True),
     ],pad=14)
-    # Arrow: Soul top → Primary Substance bottom
     arrow(c,PS_cxs[0],soul_y,PS_cxs[0],L2y+L2h,lw=1.1)
     txt(c,PS_cxs[0]+34,L2y+L2h+12,'form of',size=7.5,italic=True)
 
-    # 9 accident boxes — fully within page, centred under Accident
     n_acc=9
     avail=Acc_w-8
     aw=int(avail/n_acc)-4
@@ -417,7 +366,9 @@ def page_aristotle(c):
         ],pad=14)
 
     mono(c,W/2,soul_y+soul_h+14,
-         'Metaphysics: hyle (matter) + morphe (form) compose substance  ·  Form = essence (to ti en einai)')
+         'Metaphysics: hyle (matter) + morphe (form) compose substance  \u00b7  Form = essence (to ti en einai)')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -425,29 +376,26 @@ def page_aristotle(c):
 # ══════════════════════════════════════════════════════════════════════════
 def page_husserl(c):
     header(c,'HUSSERL',
-           'Logical Investigations  ·  Ideas I  ·  Formal & Transcendental Logic',
-           '1859–1938')
+           'Logical Investigations  \u00b7  Ideas I  \u00b7  Formal & Transcendental Logic',
+           '1859\u20131938')
     badges(c, BADGES['husserl'])
     T=T0
 
-    # L0 — Gegenstand überhaupt (object in general)
     L0w=300; L0h=56; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
-        ('Object in general  (Gegenstand überhaupt)',11.5,True,False),
+        ('Object in general  (Gegenstand \u00fcberhaupt)',11.5,True,False),
         ('anything that can be the bearer of predicates',8,False,True),
     ],pad=12)
 
-    # cross-cut note: Foundation / Fundierung — Husserl's signature formal relation
     note_y=T+L0h+4; note_h=22
     dbox(c,L0x-50,note_y,L0w+100,note_h,lw=0.6)
     boxlabel(c,W/2,note_y,note_h,[
-        ('cross-cut: Foundation (Fundierung) — dependent vs independent parts  ·  LU III',7,False,True),
+        ('cross-cut: Foundation (Fundierung) \u2014 dependent vs independent parts  \u00b7  LU III',7,False,True),
     ],pad=6)
 
     L1y=T+L0h+note_h+20; L1h=50
 
-    # L1 split: Formal Ontology (left) | Regional Ontologies (right)
     Form_x=MAR+10; Form_w=320; Form_cx=Form_x+Form_w//2
     Reg_x=Form_x+Form_w+25; Reg_w=int(W-MAR-Reg_x); Reg_cx=Reg_x+Reg_w//2
 
@@ -457,7 +405,7 @@ def page_husserl(c):
     box(c,Form_x,L1y,Form_w,L1h,lw=1.2)
     boxlabel(c,Form_cx,L1y,L1h,[
         ('Formal Ontology',13,True,False),
-        ('applies to any object whatever  ·  empty of content',8,False,True),
+        ('applies to any object whatever  \u00b7  empty of content',8,False,True),
     ])
     box(c,Reg_x,L1y,Reg_w,L1h,lw=1.2)
     boxlabel(c,Reg_cx,L1y,L1h,[
@@ -467,7 +415,6 @@ def page_husserl(c):
 
     L2y=L1y+L1h+30; L2h=88
 
-    # L2 under Formal Ontology: 4 formal categories
     F2w=(Form_w-15)//4
     F2g=5
     F2xs=[Form_x+i*(F2w+F2g) for i in range(4)]
@@ -493,7 +440,6 @@ def page_husserl(c):
         box(c,F2xs[i],L2y,F2w,L2h,lw=0.9)
         boxlabel(c,F2cxs[i],L2y,L2h,lines,pad=13)
 
-    # L2 under Material: 4 regional ontologies
     R2w=(Reg_w-15)//4
     R2g=5
     R2xs=[Reg_x+i*(R2w+R2g) for i in range(4)]
@@ -504,12 +450,12 @@ def page_husserl(c):
     R2d=[
         [('Nature',10,True,False),
          ('physical things',7.5,False,True),
-         ('Ideas II §1',7.5,False,True)],
+         ('Ideas II \u00a71',7.5,False,True)],
         [('Animate Nature',10,True,False),
          ('psyche, body,',7.5,False,True),
          ('lived experience',7.5,False,True)],
         [('Spirit / Culture',10,True,False),
-         ('Geist  ·  social,',7.5,False,True),
+         ('Geist  \u00b7  social,',7.5,False,True),
          ('historical world',7.5,False,True)],
         [('Pure Logic',10,True,False),
          ('ideal meanings,',7.5,False,True),
@@ -519,41 +465,35 @@ def page_husserl(c):
         box(c,R2xs[i],L2y,R2w,L2h,lw=0.9)
         boxlabel(c,R2cxs[i],L2y,L2h,lines,pad=13)
 
-    # ── Foundation arrow: from Animate Nature bottom curving to Nature bottom ──
-    # Illustrates Fundierung: the psychic is founded on the physical.
-    # Both bottoms at y = L2y+L2h.
-    AN_bot_cx = R2cxs[1]   # Animate Nature
-    Nat_bot_cx = R2cxs[0]  # Nature
+    AN_bot_cx = R2cxs[1]
+    Nat_bot_cx = R2cxs[0]
     bot_y = L2y + L2h
     dip_y = bot_y + 30
 
     cubic_arrow(c,
-        AN_bot_cx,   bot_y,
-        AN_bot_cx,   dip_y,
-        Nat_bot_cx,  dip_y,
-        Nat_bot_cx,  bot_y,
+        AN_bot_cx, bot_y, AN_bot_cx, dip_y,
+        Nat_bot_cx, dip_y, Nat_bot_cx, bot_y,
         lw=0.9, dash=True)
     lbl_cx = (AN_bot_cx + Nat_bot_cx) // 2
     txt(c, lbl_cx, dip_y + 11, 'founded on  (fundiert in)', size=8, bold=True, italic=True)
 
     mono(c,W/2,L2y+L2h+58,
-         'coined "formal ontology"  ·  ancestor of BFO, DOLCE, GFO mereology & dependence')
+         'coined "formal ontology"  \u00b7  ancestor of BFO, DOLCE, GFO mereology & dependence')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
 # PAGE 4 — BFO
 # ══════════════════════════════════════════════════════════════════════════
 def page_bfo(c):
-    header(c,'BFO','Basic Formal Ontology','Arp, Smith, Spear  ·  2015')
+    header(c,'BFO','Basic Formal Ontology','Arp, Smith, Spear  \u00b7  2015')
     badges(c, BADGES['bfo'])
     T=T0
     L0w=200; L0h=52; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[('Entity',14,True,False),('universal or particular',8,False,True)])
     L1y=T+L0h+30; L1h=46
-    # L1 boxes sized to exactly span their L2 rows underneath:
-    # Continuant L2: x=MAR+14 (42), 3 boxes of cw=104, gap cg=5 → width = 3*104+2*5 = 322
-    # Occurrent  L2: x=400, same width 322
     cont_x=MAR+14; cont_w=322; cont_cx=cont_x+cont_w//2
     occ_x=400;     occ_w=322;  occ_cx=occ_x+occ_w//2
     arrow(c,W/2-30,T+L0h,cont_cx,L1y,lw=1.0)
@@ -581,14 +521,16 @@ def page_bfo(c):
         box(c,cont_xs[i],L2y,cw,L2h,lw=0.9); boxlabel(c,cont_xs[i]+cw//2,L2y,L2h,lines,pad=13)
     for i,lines in enumerate(occ_d):
         box(c,occ_xs[i],L2y,cw,L2h,lw=0.9); boxlabel(c,occ_xs[i]+cw//2,L2y,L2h,lines,pad=13)
-    mono(c,W/2,L2y+L2h+16,'ontological realism  ·  universals in re')
+    mono(c,W/2,L2y+L2h+16,'ontological realism  \u00b7  universals in re')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
 # PAGE 5 — GFO
 # ══════════════════════════════════════════════════════════════════════════
 def page_gfo(c):
-    header(c,'GFO','General Formal Ontology','Herre et al.  ·  Leipzig  ·  1999-')
+    header(c,'GFO','General Formal Ontology','Herre et al.  \u00b7  Leipzig  \u00b7  1999-')
     badges(c, BADGES['gfo'])
     T=T0
     L0w=220; L0h=52; L0x=int((W-L0w)/2)
@@ -631,7 +573,9 @@ def page_gfo(c):
     txt(c,W/2,L2y+L2h+13,
         'cross-cutting: Individual vs. Category  (GFO term "Categor" = universal / concept / symbol structure)',
         size=7.5,italic=True)
-    mono(c,W/2,L2y+L2h+25,'4 ontological strata  ·  3-layer meta-ontology  ·  integrates objects + processes')
+    mono(c,W/2,L2y+L2h+25,'4 ontological strata  \u00b7  3-layer meta-ontology  \u00b7  integrates objects + processes')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -640,12 +584,12 @@ def page_gfo(c):
 def page_dolce(c):
     header(c,'DOLCE',
            'Descriptive Ontology for Linguistic & Cognitive Engineering',
-           'Masolo et al.  ·  LOA-CNR  ·  2003')
+           'Masolo et al.  \u00b7  LOA-CNR  \u00b7  2003')
     badges(c, BADGES['dolce'])
     T=T0
     L0w=220; L0h=52; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
-    boxlabel(c,W/2,T,L0h,[('Particular',14,True,False),('cognitive artifact · not universal',8,False,True)])
+    boxlabel(c,W/2,T,L0h,[('Particular',14,True,False),('cognitive artifact \u00b7 not universal',8,False,True)])
     L1y=T+L0h+30; L1h=46; L1w=174; L1g=4
     L1xs=[MAR+i*(L1w+L1g) for i in range(4)]
     L1cxs=[x+L1w//2 for x in L1xs]
@@ -680,7 +624,9 @@ def page_dolce(c):
         off=-(L2w//2+L2g) if i%2==0 else (L2w//2+L2g)
         arrow(c,L1cx+off*0.5,L1y+L1h,cx,L2y,lw=0.75)
         box(c,bx,L2y,L2w,L2h,lw=0.85); boxlabel(c,cx,L2y,L2h,lines)
-    mono(c,W/2,L2y+L2h+16,'descriptive  ·  multiplicative  ·  co-location allowed')
+    mono(c,W/2,L2y+L2h+16,'descriptive  \u00b7  multiplicative  \u00b7  co-location allowed')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -688,17 +634,15 @@ def page_dolce(c):
 # ══════════════════════════════════════════════════════════════════════════
 def page_efo(c):
     header(c,'EFO','Epistemic Foundational Ontology',
-           'Kassel  ·  Univ. Picardie  ·  2025')
+           'Kassel  \u00b7  Univ. Picardie  \u00b7  2025')
     badges(c, BADGES['efo'])
     T=T0
 
-    # L0 — 2 lines: one bold title, one italic subtitle
-    # Keep subtitle short so it fits in one line without crowding
     L0w=260; L0h=56; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
         ('Entity',14,True,False),
-        ('thought object  ·  in(x, world w)',8,False,True),
+        ('thought object  \u00b7  in(x, world w)',8,False,True),
     ],pad=12)
 
     L1y=T+L0h+30; L1h=48
@@ -736,7 +680,6 @@ def page_efo(c):
         [('Repres. Object',11,True,False),('Vorstellen',8,False,True),('Twardowski',7.5,False,True)],
     ]
 
-    # Draw L1→L2 arrows BEFORE boxes so boxes occlude arrow tips
     for i in range(3):
         cx=Phys_bxs[i]+L2w//2; arrow(c,Phys_srcs[i],L1y+L1h,cx,L2y,lw=0.85)
     for i in range(3):
@@ -749,34 +692,18 @@ def page_efo(c):
         bx=Ment_bxs[i]; cx=bx+L2w//2
         box(c,bx,L2y,L2w,L2h,lw=0.9); boxlabel(c,cx,L2y,L2h,lines,pad=13)
 
-    # ── Intentionality: clean arc from Concept top → Phys L1 bottom ────────
-    #
-    # Constraints (from coord computation):
-    #   Concept top-centre: x=476, y=246
-    #   Physical Entity bottom: y=216
-    #   Property arrow x=338 (vertical, must stay right of it)
-    #   Target end: x=370, y=216  (right of Property arrow, left of Phys right 403)
-    #   Space: y from 216 (Phys bot) to 246 (L2 top) = 30pt clear vertical band
-    #   The arc crosses this band — label sits ON the arc in this band.
-    #
-    # Arc: start Concept top at x=456 (slightly left of centre),
-    #      gentle leftward sweep arriving at (370, 216).
-    #      ctrl1 pulls left and up, ctrl2 arrives from right.
-
     cubic_arrow(c,
-        456,  L2y,         # start: Concept top, slightly left of centre (456, 246)
-        390,  224,         # ctrl1: sweep left, rise toward Phys bottom   (390, 224)
-        372,  216,         # ctrl2: approach end from right               (372, 216)
-        370,  L1y+L1h,    # end:   Phys L1 bottom, right of Prop arrow   (370, 216)
+        456,  L2y,
+        390,  224,
+        372,  216,
+        370,  L1y+L1h,
         lw=0.9, dash=True)
-
-    # Label: placed ON the arc at its visual midpoint (~x=413, y=230),
-    # which is in the clear band between L2 top (246) and Phys bot (216).
-    # Bold italic so it reads clearly even crossing the dashed line.
     txt(c, 413, 232, 'intentionality', size=8, bold=True, italic=True)
 
-    txt(c,W/2,L2y+L2h+20,'Worlds:  real  ·  fictional  ·  possible',size=9,italic=True)
-    mono(c,W/2,L2y+L2h+34,'epistemic  ·  nominalist  ·  thought-object categories')
+    txt(c,W/2,L2y+L2h+20,'Worlds:  real  \u00b7  fictional  \u00b7  possible',size=9,italic=True)
+    mono(c,W/2,L2y+L2h+34,'epistemic  \u00b7  nominalist  \u00b7  thought-object categories')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -785,16 +712,15 @@ def page_efo(c):
 def page_chisholm(c):
     header(c,'CHISHOLM',
            'A Realistic Theory of Categories: An Essay on Ontology',
-           'Roderick M. Chisholm  ·  Cambridge University Press  ·  1996')
+           'Roderick M. Chisholm  \u00b7  Cambridge University Press  \u00b7  1996')
     badges(c, BADGES['chisholm'])
     T=T0
 
-    # L0
     L0w=240; L0h=56; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
         ('Ens  (Everything)',13,True,False),
-        ('non-Aristotelian  ·  primary cut: modal',8,False,True),
+        ('non-Aristotelian  \u00b7  primary cut: modal',8,False,True),
         ('necessary vs. contingent',7.5,False,True),
     ],pad=12)
 
@@ -818,7 +744,6 @@ def page_chisholm(c):
 
     L2y=L1y+L1h+30; L2h=86
 
-    # L2 under Necessary: 2 boxes
     N2w=(Nec_w-12)//2; N2g=12
     N2xs=[Nec_x+i*(N2w+N2g) for i in range(2)]
     N2cxs=[x+N2w//2 for x in N2xs]
@@ -838,7 +763,6 @@ def page_chisholm(c):
         box(c,N2xs[i],L2y,N2w,L2h,lw=0.9)
         boxlabel(c,N2cxs[i],L2y,L2h,lines,pad=12)
 
-    # L2 under Contingent: 4 boxes
     C2w=(Con_w-15)//4; C2g=5
     C2xs=[Con_x+i*(C2w+C2g) for i in range(4)]
     C2cxs=[x+C2w//2 for x in C2xs]
@@ -866,7 +790,6 @@ def page_chisholm(c):
         box(c,C2xs[i],L2y,C2w,L2h,lw=0.9)
         boxlabel(c,C2cxs[i],L2y,L2h,lines,pad=12)
 
-    # Two side-by-side dotted notes
     note_y=L2y+L2h+18; note_h=52
     NL_x=Nec_x; NL_w=Nec_w
     NR_x=Con_x; NR_w=Con_w
@@ -884,7 +807,9 @@ def page_chisholm(c):
     ],pad=10)
 
     mono(c,W/2,note_y+note_h+14,
-         'Brentano-realist  ·  non-Aristotelian  ·  modal primary cut  ·  A Realistic Theory of Categories, CUP 1996')
+         'Brentano-realist  \u00b7  non-Aristotelian  \u00b7  modal primary cut  \u00b7  A Realistic Theory of Categories, CUP 1996')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -892,17 +817,16 @@ def page_chisholm(c):
 # ══════════════════════════════════════════════════════════════════════════
 def page_rosenkrantz(c):
     header(c,'ROSENKRANTZ',
-           'Substance Among Other Categories  ·  Hoffman & Rosenkrantz',
-           'Cambridge University Press  ·  1994')
+           'Substance Among Other Categories  \u00b7  Hoffman & Rosenkrantz',
+           'Cambridge University Press  \u00b7  1994')
     badges(c, BADGES['rosenkrantz'])
     T=T0
 
-    # L0
     L0w=240; L0h=56; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
         ('Entity',14,True,False),
-        ('summum genus  ·  descriptive categorial system',7.5,False,True),
+        ('summum genus  \u00b7  descriptive categorial system',7.5,False,True),
         ('not necessarily exhaustive  (1994, p. 140)',7.5,False,True),
     ],pad=12)
 
@@ -921,12 +845,11 @@ def page_rosenkrantz(c):
     box(c,Abs_x,L1y,Abs_w,L1h,lw=1.2)
     boxlabel(c,Abs_cx,L1y,L1h,[
         ('Abstract',13,True,False),
-        ('outside space & time  ·  causally inert',8,False,True),
+        ('outside space & time  \u00b7  causally inert',8,False,True),
     ])
 
     L2y=L1y+L1h+30; L2h=78
 
-    # L2 under Concrete: 4 boxes
     C2w=(Con_w-15)//4; C2g=5
     C2xs=[Con_x+i*(C2w+C2g) for i in range(4)]
     C2cxs=[x+C2w//2 for x in C2xs]
@@ -950,7 +873,6 @@ def page_rosenkrantz(c):
         box(c,C2xs[i],L2y,C2w,L2h,lw=0.9)
         boxlabel(c,C2cxs[i],L2y,L2h,lines,pad=12)
 
-    # L2 under Abstract: 4 boxes
     A2w=(Abs_w-15)//4; A2g=5
     A2xs=[Abs_x+i*(A2w+A2g) for i in range(4)]
     A2cxs=[x+A2w//2 for x in A2xs]
@@ -974,7 +896,6 @@ def page_rosenkrantz(c):
         box(c,A2xs[i],L2y,A2w,L2h,lw=0.9)
         boxlabel(c,A2cxs[i],L2y,L2h,lines,pad=12)
 
-    # Two side-by-side dotted notes
     note_y=L2y+L2h+20; note_h=46
     NL_x=Con_x; NL_w=Con_w
     NR_x=Abs_x; NR_w=Abs_w
@@ -987,40 +908,39 @@ def page_rosenkrantz(c):
     dbox(c,NR_x,note_y,NR_w,note_h,lw=0.7)
     boxlabel(c,Abs_cx,note_y,note_h,[
         ('Also concrete:',8,True,False),
-        ('Trope (particular wisdom of Socrates)  ·  Collection (sum of Earth+Mars)',7.5,False,True),
-        ('Limit (Earth\u2019s surface)  ·  Privation (shadow, hole)',7.5,False,True),
+        ('Trope (particular wisdom of Socrates)  \u00b7  Collection (sum of Earth+Mars)',7.5,False,True),
+        ('Limit (Earth\u2019s surface)  \u00b7  Privation (shadow, hole)',7.5,False,True),
     ],pad=8)
 
     mono(c,W/2,note_y+note_h+14,
-         'Analytic neo-Aristotelian  ·  descriptive (not assertoric)  ·  Substance Among Other Categories, CUP 1994')
+         'Analytic neo-Aristotelian  \u00b7  descriptive (not assertoric)  \u00b7  Substance Among Other Categories, CUP 1994')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
-# LOWE — the Ontological Square (2×2 grid)
+# LOWE
 # ══════════════════════════════════════════════════════════════════════════
 def page_lowe(c):
     header(c,'LOWE',
            'The Four-Category Ontology: A Metaphysical Foundation for Natural Science',
-           'E. J. Lowe  ·  Oxford University Press  ·  2006')
+           'E. J. Lowe  \u00b7  Oxford University Press  \u00b7  2006')
     badges(c, BADGES['lowe'])
     T=T0
 
-    # Top-strip dotted note explaining the diagram
     note_y=T; note_h=34
     dbox(c,MAR,note_y,W-2*MAR,note_h,lw=0.7)
     boxlabel(c,W/2,note_y,note_h,[
         ('The Ontological Square: two cross-cutting distinctions (Substance/Non-substance  x  Universal/Particular) generate four categories.',7.5,False,True),
-        ('Relations shown: solid arrows = instantiation  ·  dashed arrows = characterisation  ·  diagonal = exemplification',7.5,False,True),
+        ('Relations shown: solid arrows = instantiation  \u00b7  dashed arrows = characterisation  \u00b7  diagonal = exemplification',7.5,False,True),
     ],pad=8)
 
-    # Axis labels
     axis_y_top=note_y+note_h+18
     txt(c,W/2,axis_y_top,'UNIVERSALS',size=9,bold=True)
 
-    # The 2x2 grid
     grid_y=axis_y_top+10
-    bw=240; bh=140; bg_h=80   # box width, height, vertical gap between rows
-    bg_w=160                   # horizontal gap between columns (room for vertical instantiation arrows)
+    bw=240; bh=140; bg_h=80
+    bg_w=160
 
     total_w=2*bw+bg_w
     grid_x=int((W-total_w)/2)
@@ -1033,42 +953,28 @@ def page_lowe(c):
     TL_cx=TL_x+bw//2; TR_cx=TR_x+bw//2
     BL_cx=BL_x+bw//2; BR_cx=BR_x+bw//2
 
-    # Side axis labels (rotated would be ideal, but txt aligned to side)
     txt(c,grid_x-12,grid_y+bh//2-12,'SUBSTANTIAL',size=9,bold=True,align='right')
-    txt(c,grid_x-12,grid_y+bh//2,'',size=8)
-    txt(c,grid_x-12,BL_y+bh//2-12,'',size=8)
     txt(c,W-grid_x+12,grid_y+bh//2-12,'NON-',size=9,bold=True,align='left')
     txt(c,W-grid_x+12,grid_y+bh//2-2,'SUBSTANTIAL',size=9,bold=True,align='left')
-
-    # PARTICULARS label below
     txt(c,W/2,BL_y+bh+18,'PARTICULARS',size=9,bold=True)
 
-    # ── Draw arrows BEFORE boxes so boxes occlude arrow tips cleanly ──
-
-    # Vertical instantiation arrows: Kinds → Objects, Attributes → Modes (top to bottom)
-    # Place them at right edge of left boxes / left edge of right boxes
     inst_x_L=TL_x+bw-30
     inst_x_R=TR_x+30
     arrow(c,inst_x_L,TL_y+bh,inst_x_L,BL_y,lw=1.0)
     arrow(c,inst_x_R,TR_y+bh,inst_x_R,BR_y,lw=1.0)
 
-    # Horizontal characterisation arrows (dashed, right-to-left): Attributes → Kinds, Modes → Objects
     char_y_T=TL_y+bh//2-12
     char_y_B=BL_y+bh//2-12
     darrow(c,TR_x,char_y_T,TL_x+bw,char_y_T,lw=0.9)
     darrow(c,BR_x,char_y_B,BL_x+bw,char_y_B,lw=0.9)
-
-    # Diagonal exemplification arrow: Objects (BL) → Attributes (TR), dashed
     darrow(c,BL_x+bw-20,BL_y,TR_x+20,TR_y+bh,lw=0.9)
 
-    # Arrow labels
     txt(c,inst_x_L+18,TL_y+bh+bg_h//2,'instantiation',size=7.5,italic=True,align='left')
     txt(c,inst_x_R-18,TR_y+bh+bg_h//2,'instantiation',size=7.5,italic=True,align='right')
     txt(c,(TL_x+bw+TR_x)//2,char_y_T-3,'characterisation',size=7.5,italic=True)
     txt(c,(BL_x+bw+BR_x)//2,char_y_B-3,'characterisation',size=7.5,italic=True)
     txt(c,W/2,(TL_y+bh+BL_y)//2-2,'exemplification',size=7.5,italic=True)
 
-    # ── Now draw the four boxes ──
     box(c,TL_x,TL_y,bw,bh,lw=1.0)
     boxlabel(c,TL_cx,TL_y,bh,[
         ('Kinds',13,True,False),
@@ -1102,7 +1008,6 @@ def page_lowe(c):
         ('characterise Objects',7.5,False,True),
     ],pad=14)
 
-    # Bottom dotted note: Laws of Nature
     bn_y=BL_y+bh+34; bn_h=32
     dbox(c,MAR+40,bn_y,W-2*(MAR+40),bn_h,lw=0.7)
     boxlabel(c,W/2,bn_y,bn_h,[
@@ -1111,7 +1016,9 @@ def page_lowe(c):
     ],pad=8)
 
     mono(c,W/2,bn_y+bn_h+14,
-         'Neo-Aristotelian  ·  realist  ·  no formal (OWL) encoding  ·  The Possibility of Metaphysics (1998) + The Four-Category Ontology (2006)')
+         'Neo-Aristotelian  \u00b7  realist  \u00b7  no formal (OWL) encoding  \u00b7  The Possibility of Metaphysics (1998) + The Four-Category Ontology (2006)')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -1120,17 +1027,16 @@ def page_lowe(c):
 def page_sumo(c):
     header(c,'SUMO',
            'Suggested Upper Merged Ontology',
-           'Ian Niles & Adam Pease  ·  Ontology Portal  ·  2001\u2013ongoing')
+           'Ian Niles & Adam Pease  \u00b7  Ontology Portal  \u00b7  2001\u2013ongoing')
     badges(c, BADGES['sumo'])
     T=T0
 
-    # L0
     L0w=240; L0h=56; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
         ('Entity',14,True,False),
         ('physically existent or abstract / mentally represented',7.5,False,True),
-        ('root of single strict hierarchy  ·  SUO-KIF / OWL',7.5,False,True),
+        ('root of single strict hierarchy  \u00b7  SUO-KIF / OWL',7.5,False,True),
     ],pad=12)
 
     L1y=T+L0h+30; L1h=46
@@ -1143,17 +1049,16 @@ def page_sumo(c):
     box(c,Phys_x,L1y,Phys_w,L1h,lw=1.2)
     boxlabel(c,Phys_cx,L1y,L1h,[
         ('Physical',13,True,False),
-        ('has a location in space-time  ·  disjoint from Abstract',8,False,True),
+        ('has a location in space-time  \u00b7  disjoint from Abstract',8,False,True),
     ])
     box(c,Abs_x,L1y,Abs_w,L1h,lw=1.2)
     boxlabel(c,Abs_cx,L1y,L1h,[
         ('Abstract',13,True,False),
-        ('no spatiotemporal location  ·  not a subclass of Object',8,False,True),
+        ('no spatiotemporal location  \u00b7  not a subclass of Object',8,False,True),
     ])
 
     L2y=L1y+L1h+30; L2h=86
 
-    # L2 under Physical: 2 boxes
     P2w=(Phys_w-12)//2; P2g=12
     P2xs=[Phys_x+i*(P2w+P2g) for i in range(2)]
     P2cxs=[x+P2w//2 for x in P2xs]
@@ -1173,7 +1078,6 @@ def page_sumo(c):
         box(c,P2xs[i],L2y,P2w,L2h,lw=0.9)
         boxlabel(c,P2cxs[i],L2y,L2h,lines,pad=12)
 
-    # L2 under Abstract: 4 boxes
     A2w=(Abs_w-15)//4; A2g=5
     A2xs=[Abs_x+i*(A2w+A2g) for i in range(4)]
     A2cxs=[x+A2w//2 for x in A2xs]
@@ -1201,7 +1105,6 @@ def page_sumo(c):
         box(c,A2xs[i],L2y,A2w,L2h,lw=0.9)
         boxlabel(c,A2cxs[i],L2y,L2h,lines,pad=12)
 
-    # Two side-by-side dotted notes
     note_y=L2y+L2h+18; note_h=52
     dbox(c,Phys_x,note_y,Phys_w,note_h,lw=0.7)
     boxlabel(c,Phys_cx,note_y,note_h,[
@@ -1212,12 +1115,14 @@ def page_sumo(c):
     dbox(c,Abs_x,note_y,Abs_w,note_h,lw=0.7)
     boxlabel(c,Abs_cx,note_y,note_h,[
         ('Relation subsumes Class (set-theoretic)  which subsumes Predicate',8,True,False),
-        ('Entirely mapped to WordNet (>100,000 synsets)  ·  SUO-KIF = FOL-based',7,False,True),
+        ('Entirely mapped to WordNet (>100,000 synsets)  \u00b7  SUO-KIF = FOL-based',7,False,True),
         ('Physical/Abstract cut echoes Rosenkrantz Concrete/Abstract distinction',7,False,True),
     ],pad=10)
 
     mono(c,W/2,note_y+note_h+14,
-         'Formal upper ontology  ·  ontological realism  ·  largest public upper ontology  ·  Niles & Pease, FOIS 2001')
+         'Formal upper ontology  \u00b7  ontological realism  \u00b7  largest public upper ontology  \u00b7  Niles & Pease, FOIS 2001')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -1225,12 +1130,11 @@ def page_sumo(c):
 # ══════════════════════════════════════════════════════════════════════════
 def page_tractatus(c):
     header(c,'TRACTATUS',
-           'Tractatus Logico-Philosophicus  ·  early Wittgenstein',
-           'Ludwig Wittgenstein  ·  Kegan Paul  ·  1921')
+           'Tractatus Logico-Philosophicus  \u00b7  early Wittgenstein',
+           'Ludwig Wittgenstein  \u00b7  Kegan Paul  \u00b7  1921')
     badges(c, BADGES['tractatus'])
     T=T0
 
-    # L0
     L0w=270; L0h=56; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
@@ -1239,16 +1143,13 @@ def page_tractatus(c):
         ('all that is the case  (\u00a71)',7.5,False,True),
     ],pad=12)
 
-    # cross-cut note: said vs shown — the famous transcendental cut
     note_y=T+L0h+4; note_h=22
     dbox(c,L0x-60,note_y,L0w+120,note_h,lw=0.6)
     boxlabel(c,W/2,note_y,note_h,[
-        ('cross-cut: what can be said (gesagt) vs what can only be shown (gezeigt)  ·  \u00a74.1212',7,False,True),
+        ('cross-cut: what can be said (gesagt) vs what can only be shown (gezeigt)  \u00b7  \u00a74.1212',7,False,True),
     ],pad=6)
 
     L1y=T+L0h+note_h+20; L1h=50
-
-    # L1 split: Facts (contingent) | Logical Form (necessary)
     F_x=MAR+10; F_w=300; F_cx=F_x+F_w//2
     L_x=F_x+F_w+30; L_w=int(W-MAR-L_x); L_cx=L_x+L_w//2
 
@@ -1258,23 +1159,21 @@ def page_tractatus(c):
     box(c,F_x,L1y,F_w,L1h,lw=1.2)
     boxlabel(c,F_cx,L1y,L1h,[
         ('Facts  (Tatsachen)',13,True,False),
-        ('contingent  ·  what is the case  (\u00a72)',8,False,True),
+        ('contingent  \u00b7  what is the case  (\u00a72)',8,False,True),
     ])
     box(c,L_x,L1y,L_w,L1h,lw=1.2)
     boxlabel(c,L_cx,L1y,L1h,[
         ('Logical Form',13,True,False),
-        ('necessary  ·  scaffolding shared by language and world',8,False,True),
+        ('necessary  \u00b7  scaffolding shared by language and world',8,False,True),
     ])
 
     L2y=L1y+L1h+30; L2h=92
 
-    # L2 under Facts: 2 boxes — States of Affairs, Objects
     F2w=(F_w-12)//2; F2g=12
     F2xs=[F_x+i*(F2w+F2g) for i in range(2)]
     F2cxs=[x+F2w//2 for x in F2xs]
     arrow(c,F_cx-40,L1y+L1h,F2cxs[0],L2y,lw=0.85)
     arrow(c,F_cx+40,L1y+L1h,F2cxs[1],L2y,lw=0.85)
-
     F2d=[
         [('States of Affairs',10,True,False),
          ('Sachverhalt',8,False,True),
@@ -1289,13 +1188,11 @@ def page_tractatus(c):
         box(c,F2xs[i],L2y,F2w,L2h,lw=0.9)
         boxlabel(c,F2cxs[i],L2y,L2h,lines,pad=13)
 
-    # L2 under Logical Form: 2 boxes — Logical Space, Picture-form
     L2w=(L_w-12)//2; L2g=12
     L2xs=[L_x+i*(L2w+L2g) for i in range(2)]
     L2cxs=[x+L2w//2 for x in L2xs]
     arrow(c,L_cx-40,L1y+L1h,L2cxs[0],L2y,lw=0.85)
     arrow(c,L_cx+40,L1y+L1h,L2cxs[1],L2y,lw=0.85)
-
     L2d=[
         [('Logical Space',10,True,False),
          ('possible configurations',7.5,False,True),
@@ -1310,23 +1207,17 @@ def page_tractatus(c):
         box(c,L2xs[i],L2y,L2w,L2h,lw=0.9)
         boxlabel(c,L2cxs[i],L2y,L2h,lines,pad=13)
 
-    # ── Constitution arrow: States of Affairs constituted by Objects ──
-    # Both at L2, side by side. Arc from Objects bottom to States bottom.
     Obj_bot_cx = F2cxs[1]
     SoA_bot_cx = F2cxs[0]
     bot_y = L2y + L2h
     dip_y = bot_y + 28
-
     cubic_arrow(c,
-        Obj_bot_cx,  bot_y,
-        Obj_bot_cx,  dip_y,
-        SoA_bot_cx,  dip_y,
-        SoA_bot_cx,  bot_y,
+        Obj_bot_cx, bot_y, Obj_bot_cx, dip_y,
+        SoA_bot_cx, dip_y, SoA_bot_cx, bot_y,
         lw=0.9, dash=True)
     lbl_cx = (Obj_bot_cx + SoA_bot_cx) // 2
     txt(c, lbl_cx, dip_y + 12, 'concatenation  (\u00a72.03)', size=8, bold=True, italic=True)
 
-    # Bottom note: the picture theory + ladder metaphor
     bn_y=L2y+L2h+50; bn_h=46
     dbox(c,MAR+30,bn_y,W-2*(MAR+30),bn_h,lw=0.7)
     boxlabel(c,W/2,bn_y,bn_h,[
@@ -1336,7 +1227,9 @@ def page_tractatus(c):
     ],pad=8)
 
     mono(c,W/2,bn_y+bn_h+14,
-         'logical atomism  ·  austere realism  ·  ladder thrown away after climbing  (\u00a76.54)')
+         'logical atomism  \u00b7  austere realism  \u00b7  ladder thrown away after climbing  (\u00a76.54)')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
@@ -1345,20 +1238,18 @@ def page_tractatus(c):
 def page_meinong(c):
     header(c,'MEINONG',
            '\u00dcber Gegenstandstheorie  (The Theory of Objects)',
-           'Alexius Meinong  ·  Graz school  ·  1904')
+           'Alexius Meinong  \u00b7  Graz school  \u00b7  1904')
     badges(c, BADGES['meinong'])
     T=T0
 
-    # L0
     L0w=300; L0h=56; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
         ('Object  (Gegenstand)',13,True,False),
-        ('anything thinkable  ·  the most general category',8,False,True),
+        ('anything thinkable  \u00b7  the most general category',8,False,True),
         ('every thought has an object, even non-existent ones',7.5,False,True),
     ],pad=12)
 
-    # cross-cut note: Sein vs Sosein — the master distinction
     note_y=T+L0h+4; note_h=22
     dbox(c,L0x-50,note_y,L0w+100,note_h,lw=0.6)
     boxlabel(c,W/2,note_y,note_h,[
@@ -1366,8 +1257,6 @@ def page_meinong(c):
     ],pad=6)
 
     L1y=T+L0h+note_h+20; L1h=56
-
-    # L1: three-way split
     L1w=(W-2*MAR-30)//3; L1g=15
     L1xs=[MAR+i*(L1w+L1g) for i in range(3)]
     L1cxs=[x+L1w//2 for x in L1xs]
@@ -1391,17 +1280,9 @@ def page_meinong(c):
         boxlabel(c,L1cxs[i],L1y,L1h,lines)
 
     L2y=L1y+L1h+30; L2h=86
-
-    # Each L1 has 2 children at L2
-    # Existieren → Physical Things, Mental Acts
-    # Bestehen   → Numbers/Mathematical, Objectives
-    # Aussersein → Incomplete Objects, Impossible Objects
-
-    L2_per=2
     L2w=(L1w-10)//2; L2g=10
 
     L2_groups=[
-        # Under Existieren
         [
             [('Physical Things',10,True,False),
              ('material objects',7.5,False,True),
@@ -1410,7 +1291,6 @@ def page_meinong(c):
              ('Brentano: presentation,',7.5,False,True),
              ('judgment, emotion',7.5,False,True)],
         ],
-        # Under Bestehen
         [
             [('Numbers /',10,True,False),
              ('Mathematical',10,True,False),
@@ -1419,7 +1299,6 @@ def page_meinong(c):
              ('Objektive',8,False,True),
              ('propositions, states of affairs',7.5,False,True)],
         ],
-        # Under Aussersein
         [
             [('Incomplete /',10,True,False),
              ('Impossible',10,True,False),
@@ -1434,40 +1313,38 @@ def page_meinong(c):
     for gi in range(3):
         gx=L1xs[gi]
         L1cx=L1cxs[gi]
-        # 2 sub-boxes side by side under this L1
         sxs=[gx + (L1w-2*L2w-L2g)//2 + j*(L2w+L2g) for j in range(2)]
         scxs=[x+L2w//2 for x in sxs]
-        # arrows from L1 box bottom
         arrow(c,L1cx-25,L1y+L1h,scxs[0],L2y,lw=0.8)
         arrow(c,L1cx+25,L1y+L1h,scxs[1],L2y,lw=0.8)
         for j,lines in enumerate(L2_groups[gi]):
             box(c,sxs[j],L2y,L2w,L2h,lw=0.9)
             boxlabel(c,scxs[j],L2y,L2h,lines,pad=12)
 
-    # Bottom note: Russell controversy + downstream influence
     bn_y=L2y+L2h+22; bn_h=46
     dbox(c,MAR+30,bn_y,W-2*(MAR+30),bn_h,lw=0.7)
     boxlabel(c,W/2,bn_y,bn_h,[
         ('Russell ("On Denoting", 1905) attacked Aussersein as ontologically extravagant \u2014 the founding dispute of analytic philosophy',8,True,False),
-        ('Downstream:  free logic  ·  possible-world semantics  ·  fictional-object theory (Parsons, Zalta)',7.5,False,True),
-        ('Already implicit in the deck:  Chisholm "Homeless Objects"  ·  EFO worlds (real / fictional / possible)',7.5,False,True),
+        ('Downstream:  free logic  \u00b7  possible-world semantics  \u00b7  fictional-object theory (Parsons, Zalta)',7.5,False,True),
+        ('Already implicit in the deck:  Chisholm "Homeless Objects"  \u00b7  EFO worlds (real / fictional / possible)',7.5,False,True),
     ],pad=8)
 
     mono(c,W/2,bn_y+bn_h+14,
-         'Brentano school (Graz)  ·  maximalist ontology  ·  Sosein independent of Sein  ·  ancestor of EFO thought-objects')
+         'Brentano school (Graz)  \u00b7  maximalist ontology  \u00b7  Sosein independent of Sein  \u00b7  ancestor of EFO thought-objects')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
-# GLASERSFELD — Radical Constructivism (no categorial tree)
+# GLASERSFELD
 # ══════════════════════════════════════════════════════════════════════════
 def page_glasersfeld(c):
     header(c,'RADICAL CONSTRUCTIVISM',
-           'A Way of Knowing and Learning  ·  Ernst von Glasersfeld',
-           'Falmer Press  ·  1995  (essays from the 1970s onward)')
+           'A Way of Knowing and Learning  \u00b7  Ernst von Glasersfeld',
+           'Falmer Press  \u00b7  1995  (essays from the 1970s onward)')
     badges(c, BADGES['glasersfeld'])
     T=T0
 
-    # L0 — core thesis (no tree to descend from; this IS the position)
     L0w=620; L0h=64; L0x=int((W-L0w)/2)
     box(c,L0x,T,L0w,L0h,lw=1.4)
     boxlabel(c,W/2,T,L0h,[
@@ -1476,14 +1353,12 @@ def page_glasersfeld(c):
         ('There is no categorial scheme \u2014 categories are constructions, contingent on the cognizing subject.',8,False,True),
     ],pad=12)
 
-    # Two-column contrast: Traditional ontology vs Radical Constructivism
     col_y=T+L0h+30; col_h=210
     col_w=(W-2*MAR-30)//2
     col_gap=30
     L_x=MAR+10; L_cx=L_x+col_w//2
     R_x=L_x+col_w+col_gap; R_cx=R_x+col_w//2
 
-    # Column headers (in boxes, like L1 elsewhere)
     hdr_h=36
     box(c,L_x,col_y,col_w,hdr_h,lw=1.2)
     boxlabel(c,L_cx,col_y,hdr_h,[
@@ -1496,7 +1371,6 @@ def page_glasersfeld(c):
         ('Glasersfeld\'s counter-position',7.5,False,True),
     ])
 
-    # Five paired claims, in matching boxes underneath each column header
     claims_y=col_y+hdr_h+12
     claim_h=30
     claim_g=6
@@ -1527,46 +1401,44 @@ def page_glasersfeld(c):
 
     for i,(L_pair,R_pair) in enumerate(zip(L_claims,R_claims)):
         y_i=claims_y+i*(claim_h+claim_g)
-        # Left side
         box(c,L_x,y_i,col_w,claim_h,lw=0.7)
         boxlabel(c,L_cx,y_i,claim_h,[
             (L_pair[0],9,True,False),
             (L_pair[1],7.5,False,True),
         ],pad=8)
-        # Right side
         box(c,R_x,y_i,col_w,claim_h,lw=0.7)
         boxlabel(c,R_cx,y_i,claim_h,[
             (R_pair[0],9,True,False),
             (R_pair[1],7.5,False,True),
         ],pad=8)
-        # Tiny "vs" connector between rows (just a horizontal dashed line segment)
         gap_cx=(L_x+col_w+R_x)//2
         c.setStrokeColor(black); c.setLineWidth(0.5)
         c.setDash(1,2)
         c.line(L_x+col_w+2, ry(y_i+claim_h//2), R_x-2, ry(y_i+claim_h//2))
         c.setDash()
 
-    # Bottom dotted note: lineage + downstream influence
     bn_y=claims_y+5*(claim_h+claim_g)+8
     bn_h=46
     dbox(c,MAR+30,bn_y,W-2*(MAR+30),bn_h,lw=0.7)
     boxlabel(c,W/2,bn_y,bn_h,[
         ('Lineage:  Vico (1710)  \u2192  Kant (constituting categories)  \u2192  Piaget (genetic epistemology)  \u2192  von Foerster, Maturana (cybernetics)  \u2192  Glasersfeld',8,True,False),
-        ('Downstream:  constructivist pedagogy (Piaget, Papert)  ·  second-order cybernetics  ·  autopoietic theory (Maturana & Varela)  ·  enactivism',7.5,False,True),
-        ('NOT:  social constructionism (Berger & Luckmann)  ·  postmodern relativism  \u2014 RC is an epistemology, not a sociology of knowledge',7.5,False,True),
+        ('Downstream:  constructivist pedagogy (Piaget, Papert)  \u00b7  second-order cybernetics  \u00b7  autopoietic theory (Maturana & Varela)  \u00b7  enactivism',7.5,False,True),
+        ('NOT:  social constructionism (Berger & Luckmann)  \u00b7  postmodern relativism  \u2014 RC is an epistemology, not a sociology of knowledge',7.5,False,True),
     ],pad=8)
 
     mono(c,W/2,bn_y+bn_h+14,
-         'meta-position  ·  no categorial tree  ·  questions the very enterprise of the preceding 12 pages')
+         'meta-position  \u00b7  no categorial tree  \u00b7  questions the very enterprise of the preceding 12 pages')
+
+    draw_watermark(c)
 
 
 # ══════════════════════════════════════════════════════════════════════════
-# BUILD
+# BUILD — same order as original
 # ══════════════════════════════════════════════════════════════════════════
-OUT='/mnt/user-data/outputs/ontological-categories-v9.pdf'
-cv=canvas.Canvas(OUT,pagesize=(W,H))
-cv.setTitle('Ontological Categories — Historical & Formal')
-# Order: ancients → early-20C analytic & continental → modern analytic → Husserl bridge → formal block → Glasersfeld coda
+OUT = '/mnt/user-data/outputs/ontological-categories-v9.pdf'
+cv = canvas.Canvas(OUT, pagesize=(W, H))
+cv.setTitle('Ontological Categories \u2014 Historical & Formal')
+
 for pfn in [
     page_plato,
     page_aristotle,
@@ -1583,7 +1455,10 @@ for pfn in [
     page_efo,
     page_glasersfeld,
 ]:
-    pfn(cv); cv.showPage()
+    pfn(cv)
+    cv.showPage()
+
 cv.save()
 from pypdf import PdfReader
-r=PdfReader(OUT); print(f"OK: {len(r.pages)} pages")
+r = PdfReader(OUT)
+print(f"OK: {len(r.pages)} pages \u2192 {OUT}")
