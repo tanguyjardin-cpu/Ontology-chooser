@@ -16,14 +16,16 @@
      ─────────────────────────────────────────────────────────── */
   :root {
     --ink:          #14110f;
-    --ink-soft:     #3a342f;
-    --ink-faint:    #7a716a;
+    --ink-soft:     #14110f;          /* was #3a342f — now black, per editorial decision */
+    --ink-faint:    #14110f;          /* was #7a716a — now black, kept token name for compatibility */
+    --ink-disabled: #7a716a;          /* only for genuinely disabled controls */
     --paper:        #f4efe6;
     --paper-soft:   #ece5d8;
     --line:         #14110f;
     --line-soft:    #c5b9a3;
-    --accent:       #8b1f1f;          /* oxblood for chosen filters & live counts */
-    --accent-soft:  #c08a8a;
+    --accent:       #c1272d;          /* brightened red — was #8b1f1f, too dark to read on this paper */
+    --accent-soft:  #e09a9d;
+    --link-blue:    #0066ff;          /* saturated blue for the deck link */
     --disabled:     #b8aea0;
     --serif:        'EB Garamond', 'Hoefler Text', Georgia, serif;
     --display:      'Fraunces', 'EB Garamond', Georgia, serif;
@@ -154,12 +156,15 @@
     margin-right: 4px;
   }
   .stickycount a {
-    color: var(--ink-faint);
+    color: var(--link-blue);
     text-decoration: none;
     border-bottom: 1px solid transparent;
-    font-size: 12px;
+    font-size: 17px;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-style: italic;
   }
-  .stickycount a:hover { color: var(--accent); border-bottom-color: var(--accent-soft); }
+  .stickycount a:hover { border-bottom-color: var(--link-blue); }
 
   /* ────────────────────────────────────────────────────────────
      Filter panel — three columns at the top of the page,
@@ -278,25 +283,29 @@
   }
   .filter-column .descriptor-row .controls button {
     font-family: var(--mono);
-    font-size: 11.5px;
+    font-size: 12px;
     letter-spacing: 0.04em;
-    border: 1px solid var(--line);
+    border: 1px solid var(--ink);
     border-radius: 999px;
-    padding: 3px 9px;
-    background: var(--paper);
-    color: var(--ink);
+    padding: 4px 11px;
+    background: var(--ink);
+    color: var(--paper);
+    font-weight: 600;
     cursor: pointer;
     transition: all 120ms;
     white-space: nowrap;
   }
   .filter-column .descriptor-row .controls button:hover {
-    background: var(--paper-soft);
+    background: #2a2520;
   }
   .filter-column .descriptor-row .controls button.must.selected {
-    background: var(--ink);
-    color: var(--paper);
+    background: var(--paper);
+    color: var(--ink);
     border-color: var(--ink);
-    font-weight: 600;
+    font-weight: 400;
+  }
+  .filter-column .descriptor-row .controls button.must.selected:hover {
+    background: var(--paper-soft);
   }
   .filter-column .descriptor-row .controls button.mustnot.selected {
     background: var(--accent);
@@ -304,11 +313,15 @@
     border-color: var(--accent);
     font-weight: 600;
   }
+  .filter-column .descriptor-row .controls button.mustnot.selected:hover {
+    background: #a01f24;
+  }
   .filter-column .descriptor-row .controls button.disabled {
     color: var(--disabled);
     border-color: var(--disabled);
     cursor: not-allowed;
     background: transparent;
+    font-weight: 400;
   }
 
   .filter-column .pill-options {
@@ -320,29 +333,31 @@
   }
   .filter-column .pill-options button {
     font-family: var(--mono);
-    font-size: 11.5px;
+    font-size: 12px;
     letter-spacing: 0.02em;
-    border: 1px solid var(--line);
+    border: 1px solid var(--ink);
     border-radius: 999px;
-    padding: 3px 9px;
-    background: var(--paper);
-    color: var(--ink);
+    padding: 4px 11px;
+    background: var(--ink);
+    color: var(--paper);
+    font-weight: 600;
     cursor: pointer;
     transition: all 120ms;
   }
   .filter-column .pill-options button.selected {
-    background: var(--ink);
-    color: var(--paper);
+    background: var(--paper);
+    color: var(--ink);
     border-color: var(--ink);
-    font-weight: 600;
+    font-weight: 400;
   }
-  .filter-column .pill-options button:hover { background: var(--paper-soft); }
-  .filter-column .pill-options button.selected:hover { background: var(--ink); }
+  .filter-column .pill-options button:hover { background: #2a2520; }
+  .filter-column .pill-options button.selected:hover { background: var(--paper-soft); }
   .filter-column .pill-options button.disabled {
     color: var(--disabled);
     border-color: var(--disabled);
     cursor: not-allowed;
     background: transparent;
+    font-weight: 400;
   }
 
   /* ────────────────────────────────────────────────────────────
@@ -626,7 +641,7 @@
 
 <div class="stickycount">
   <div id="resultcount-text"><span class="count">—</span> <span class="count-label">no filters set yet</span></div>
-  <a href="ontological-categories-v9.pdf" target="_blank" rel="noopener">view the full deck (PDF) &rarr;</a>
+  <a href="ontological-categories-v9.pdf" target="_blank" rel="noopener">View all diagrams without filtering &rarr;</a>
 </div>
 
 <div class="grid">
@@ -994,8 +1009,8 @@ function renderL2Panel(panel) {
     row.innerHTML = `
       <div class="desc-name">${label}</div>
       <div class="controls">
-        <button class="must ${cur === 'must' ? 'selected' : ''}" data-action="l2-set" data-key="${key}" data-val="must">must admit</button>
-        <button class="mustnot ${cur === 'must-not' ? 'selected' : ''}" data-action="l2-set" data-key="${key}" data-val="must-not">must not</button>
+        <button class="must ${cur === 'must' ? 'selected' : ''}" data-action="l2-set" data-key="${key}" data-val="must">includes</button>
+        <button class="mustnot ${cur === 'must-not' ? 'selected' : ''}" data-action="l2-set" data-key="${key}" data-val="must-not">excludes</button>
       </div>
     `;
     panel.appendChild(row);
@@ -1008,9 +1023,9 @@ function renderL2Summary() {
   for (const [key, _] of LAYER2_DESCRIPTORS) {
     const cur = state.layer2[key];
     if (cur === 'must') {
-      lines.push(`<span class="chosen"><span class="desc">${labels[key]}:</span><span class="val">must admit</span></span>`);
+      lines.push(`<span class="chosen"><span class="desc">${labels[key]}:</span><span class="val">includes</span></span>`);
     } else if (cur === 'must-not') {
-      lines.push(`<span class="chosen"><span class="desc">${labels[key]}:</span><span class="val exclude">must not admit</span></span>`);
+      lines.push(`<span class="chosen"><span class="desc">${labels[key]}:</span><span class="val exclude">excludes</span></span>`);
     }
   }
   return lines.join('');
@@ -1091,9 +1106,9 @@ function renderActiveFilters() {
   for (const [key, label] of LAYER2_DESCRIPTORS) {
     const cur = state.layer2[key];
     if (cur === 'must') {
-      chips.push(makeChip(label, 'must admit', () => { delete state.layer2[key]; render(); }));
+      chips.push(makeChip(label, 'includes', () => { delete state.layer2[key]; render(); }));
     } else if (cur === 'must-not') {
-      chips.push(makeChip(label, 'must not admit', () => { delete state.layer2[key]; render(); }, true));
+      chips.push(makeChip(label, 'excludes', () => { delete state.layer2[key]; render(); }, true));
     }
   }
   // Layer 3
@@ -1285,7 +1300,19 @@ document.body.addEventListener('click', (e) => {
   while (t && t !== document.body && !(t.dataset && t.dataset.action)) {
     t = t.parentElement;
   }
-  if (!t || !t.dataset || !t.dataset.action) return;
+
+  // If click was not on any actionable element, check whether to close an open column.
+  if (!t || !t.dataset || !t.dataset.action) {
+    if (state.openColumn) {
+      // Check if the click was inside the open column (in which case keep it open)
+      const openCol = document.querySelector('.filter-column.open');
+      if (openCol && !openCol.contains(e.target)) {
+        state.openColumn = null;
+        render();
+      }
+    }
+    return;
+  }
 
   const action = t.dataset.action;
   const key    = t.dataset.key;
