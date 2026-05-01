@@ -657,6 +657,274 @@
   .validator li { margin-bottom: 3px; line-height: 1.4; }
   .validator li.warn { color: var(--accent); }
   .validator li.info { color: var(--ink-faint); }
+
+  /* ────────────────────────────────────────────────────────────
+     About Ontologies — collapsible editorial section
+     ─────────────────────────────────────────────────────────── */
+  .about-section {
+    margin-bottom: 48px;
+    border-top: 2px solid var(--line);
+    padding-top: 14px;
+  }
+  .about-section summary {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+    padding: 4px 0 10px;
+  }
+  .about-section summary::-webkit-details-marker { display: none; }
+  .about-section summary .about-title {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 17px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--ink);
+  }
+  .about-section summary .about-chevron {
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--ink-faint);
+    transition: transform 200ms;
+  }
+  .about-section[open] summary .about-chevron { transform: rotate(180deg); color: var(--accent); }
+  .about-section summary:hover .about-title { color: var(--accent); }
+  .about-body {
+    padding: 8px 0 20px;
+    font-size: 17px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+    max-width: 640px;
+    border-top: 1px dashed var(--line-soft);
+  }
+  .about-body p { margin: 0 0 14px; }
+  .about-body p:last-child { margin-bottom: 0; }
+  .about-body h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin: 22px 0 8px;
+    color: var(--ink);
+  }
+  .about-body em { color: var(--ink); }
+
+  /* ────────────────────────────────────────────────────────────
+     Info box — slide-in drawer anchored to the right of the page
+     ─────────────────────────────────────────────────────────── */
+
+  /* The "ⓘ" button inside each card */
+  .infobox-trigger {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--link-blue);
+    background: none;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    padding: 2px 8px;
+    cursor: pointer;
+    margin-left: 10px;
+    vertical-align: middle;
+    transition: all 120ms;
+    white-space: nowrap;
+  }
+  .infobox-trigger:hover {
+    border-color: var(--link-blue);
+    background: rgba(0,102,255,0.06);
+  }
+
+  /* Overlay */
+  .infobox-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(20,17,15,0.35);
+    z-index: 100;
+    backdrop-filter: blur(1px);
+  }
+  .infobox-overlay.open { display: block; }
+
+  /* Drawer panel */
+  .infobox-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(460px, 100vw);
+    background: var(--paper);
+    border-left: 1.5px solid var(--line);
+    z-index: 101;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: -4px 0 32px rgba(20,17,15,0.12);
+  }
+  .infobox-drawer.open { transform: translateX(0); }
+
+  .infobox-header {
+    padding: 24px 24px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .infobox-header .infobox-name {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+    color: var(--ink);
+  }
+  .infobox-header .infobox-year {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-faint);
+    margin-top: 5px;
+    display: block;
+  }
+  .infobox-close {
+    background: none;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 4px;
+    transition: all 120ms;
+  }
+  .infobox-close:hover {
+    background: var(--ink);
+    color: var(--paper);
+  }
+
+  .infobox-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 24px 32px;
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    overscroll-behavior: contain;
+  }
+  .infobox-body::-webkit-scrollbar { width: 6px; }
+  .infobox-body::-webkit-scrollbar-track { background: transparent; }
+  .infobox-body::-webkit-scrollbar-thumb { background: var(--line-soft); border-radius: 3px; }
+
+  /* Placeholder shown when no notes have been written yet */
+  .infobox-placeholder {
+    margin-top: 12px;
+    padding: 20px;
+    border: 1px dashed var(--line-soft);
+    border-radius: 4px;
+    font-style: italic;
+    color: var(--ink-faint);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Editable notes area */
+  .infobox-notes {
+    width: 100%;
+    min-height: 180px;
+    font-family: var(--serif);
+    font-size: 16px;
+    line-height: 1.65;
+    color: var(--ink);
+    background: var(--paper-soft);
+    border: 1px solid var(--line-soft);
+    border-radius: 4px;
+    padding: 14px 16px;
+    resize: vertical;
+    outline: none;
+    margin-top: 12px;
+    box-sizing: border-box;
+    transition: border-color 120ms;
+  }
+  .infobox-notes:focus { border-color: var(--ink); }
+  .infobox-notes-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 24px;
+    margin-bottom: 4px;
+    display: block;
+  }
+  .infobox-save-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .infobox-save {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    background: var(--ink);
+    color: var(--paper);
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    padding: 5px 16px;
+    cursor: pointer;
+    transition: all 120ms;
+  }
+  .infobox-save:hover { background: #2a2520; }
+  .infobox-saved-msg {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    opacity: 0;
+    transition: opacity 400ms;
+  }
+  .infobox-saved-msg.show { opacity: 1; }
+
+  /* Info box section divider */
+  .infobox-section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 0 0 10px;
+  }
+  .infobox-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 16px;
+  }
+  .infobox-commitments {
+    font-size: 14px;
+    font-family: var(--mono);
+    color: var(--ink-soft);
+    line-height: 1.7;
+    margin-bottom: 20px;
+  }
+  .infobox-commitments .admits { color: var(--ink); }
+  .infobox-commitments .excludes { color: var(--accent); text-decoration: line-through; text-decoration-color: var(--accent-soft); }
+  .infobox-divider {
+    border: none;
+    border-top: 1px solid var(--line-soft);
+    margin: 20px 0;
+  }
 </style>
 </head>
 
@@ -676,6 +944,53 @@
   or by what tooling exists for the formalised ones. Counts update live as you choose.
   The matching ontologies appear below; each opens its diagram in a new tab.</p>
 </div>
+
+<details class="about-section">
+  <summary>
+    <span class="about-title">About Ontologies</span>
+    <span class="about-chevron">&#9650;</span>
+  </summary>
+  <div class="about-body">
+    <p>An <em>ontology</em>, in the philosophical sense, is a theory of what exists &mdash; an
+    account of the fundamental categories of being. The word comes from the Greek
+    <em>ontos</em> (being) and <em>logos</em> (study). Where empirical sciences ask what
+    <em>kinds of things</em> inhabit a domain, ontology asks what kinds of things are even
+    <em>possible</em> &mdash; what basic types reality must contain in order for anything else
+    to be the case.</p>
+
+    <h3>Categorial schemes</h3>
+    <p>Every ontology in this collection is specifically a <em>categorial scheme</em>: a small
+    inventory of highest-level genera such as <em>substance</em>, <em>universal</em>,
+    <em>particular</em>, or <em>process</em>. The idea, inherited from Aristotle's
+    <em>Categories</em>, is that these genera are not reducible to one another and that every
+    other kind of thing belongs under at least one of them. Different schemes disagree sharply
+    on which categories to posit and on whether the scheme itself is mind-independent or
+    partly shaped by cognition.</p>
+
+    <h3>Three broad stances</h3>
+    <p><em>Mind-independent</em> ontologies (Plato, Aristotle, BFO, SUMO &hellip;) hold that
+    categories carve reality at its actual joints, independently of any knower.
+    <em>Mind-inclusive</em> ones (DOLCE, Husserl, Meinong &hellip;) accept intentional,
+    fictional, or social entities as full members of the ontology. <em>Representational</em>
+    schemes (EFO) treat the ontology as a structured representation useful for reasoning,
+    without strong commitments about what ultimately exists. Radical Constructivism
+    (Glasersfeld) is a meta-position that rejects all three framings.</p>
+
+    <h3>Formal vs. philosophical</h3>
+    <p>Since the early 2000s, several ontologies have been given machine-readable encodings in
+    OWL 2, Common Logic, or KIF &mdash; making them amenable to automated reasoning, data
+    integration, and semantic web applications. Philosophical schemes (Plato through Husserl)
+    remain purely textual; their categories must be interpreted and operationalised before they
+    can inform any formal system. The <em>Practical &amp; Tooling</em> filter column above
+    lets you restrict the list to schemes that have a working implementation.</p>
+
+    <h3>Reading the diagrams</h3>
+    <p>Each entry links to a diagram (PDF) that maps out the categorial architecture of the
+    scheme: how the top-level categories relate, which entities are admitted or excluded, and
+    where the principal commitments fall. Click <strong>ⓘ notes</strong> on any card to open
+    a side panel where you can record your own annotations for that diagram.</p>
+  </div>
+</details>
 
 <div class="activefilters" id="activefilters">
   <span class="label">Active filters:</span>
@@ -708,6 +1023,21 @@
   <summary>Data validator (consistency checks)</summary>
   <ul id="validator-output"></ul>
 </details>
+
+<!-- Info box overlay + drawer -->
+<div class="infobox-overlay" id="infobox-overlay"></div>
+<div class="infobox-drawer" id="infobox-drawer" role="dialog" aria-modal="true" aria-label="Ontology notes">
+  <div class="infobox-header">
+    <div>
+      <div class="infobox-name" id="infobox-name"></div>
+      <span class="infobox-year" id="infobox-year"></span>
+    </div>
+    <button class="infobox-close" id="infobox-close" aria-label="Close">&times;</button>
+  </div>
+  <div class="infobox-body" id="infobox-body">
+    <!-- populated by JS -->
+  </div>
+</div>
 
 <footer class="foot">
   <div>Categorial schemes from Plato to Glasersfeld &middot; built as an extension of the v9 deck</div>
@@ -1276,7 +1606,7 @@ function makeCard(o) {
     const commitments = summariseCommitments(o);
 
     card.innerHTML = `
-      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a></div>
+      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a><button class="infobox-trigger" onclick="openInfoBox('${o.key}')" title="Open notes for ${o.label}">ⓘ&nbsp;notes</button></div>
       <div class="badges">${badgeHtml}</div>
       <div class="summary">${commitments}</div>
     `;
@@ -1494,12 +1824,120 @@ function runValidator() {
 }
 
 /* ════════════════════════════════════════════════════════════════════
+   INFO BOX — per-diagram notes drawer
+   ════════════════════════════════════════════════════════════════════ */
+
+// In-memory store for notes (keyed by ontology key)
+const infoBoxNotes = {};
+
+// Load notes from localStorage if available (graceful fallback)
+(function loadNotes() {
+  try {
+    const raw = localStorage.getItem('ontology-chooser-notes');
+    if (raw) Object.assign(infoBoxNotes, JSON.parse(raw));
+  } catch (_) {}
+})();
+
+function saveNotes() {
+  try { localStorage.setItem('ontology-chooser-notes', JSON.stringify(infoBoxNotes)); } catch (_) {}
+}
+
+let currentInfoKey = null;
+
+function openInfoBox(key) {
+  const o = { key, ...DATA.ontologies[key] };
+  currentInfoKey = key;
+
+  document.getElementById('infobox-name').textContent = o.label;
+  document.getElementById('infobox-year').textContent = formatYear(o.publication_year);
+
+  // Build body
+  const body = document.getElementById('infobox-body');
+  const labels = Object.fromEntries(LAYER2_DESCRIPTORS);
+  const interesting = ['process_event','mereology','roles','tropes',
+                       'fictional_objects','mental_entities','social_entities',
+                       'information_artifacts','possible_entities','boundaries'];
+
+  const admItems = [], exclItems = [];
+  for (const k of interesting) {
+    const v = clean(o.layer2[k]);
+    if (v === 'admits')          admItems.push(`<span class="admits">${labels[k]}</span>`);
+    else if (v === 'does-not-admit') exclItems.push(`<span class="excludes">${labels[k]}</span>`);
+  }
+
+  // Badges (same logic as renderCard)
+  const l1 = o.layer1;
+  const stances = Array.isArray(l1.stance) ? l1.stance : (l1.stance ? [l1.stance] : []);
+  let badgeParts = stances.map(s => `<span class="badge">${s}</span>`).join('');
+  if (l1.lineage) badgeParts += `<span class="badge">${l1.lineage}</span>`;
+  if (l1.encoding_present) badgeParts += `<span class="badge">Formalised</span>`;
+  if (l1.time_model) badgeParts += `<span class="badge">${l1.time_model}</span>`;
+
+  const existingNote = infoBoxNotes[key] || '';
+
+  body.innerHTML = `
+    <p class="infobox-section-title">Stance &amp; profile</p>
+    <div class="infobox-badges">${badgeParts || '<span style="color:var(--ink-faint);font-style:italic;font-size:14px">—</span>'}</div>
+    <p class="infobox-section-title">Key commitments</p>
+    <div class="infobox-commitments">
+      ${admItems.length   ? '<strong>Admits:</strong> ' + admItems.join(' &middot; ')   : ''}
+      ${admItems.length && exclItems.length ? '<br>' : ''}
+      ${exclItems.length  ? '<strong>Excludes:</strong> ' + exclItems.join(' &middot; ') : ''}
+      ${!admItems.length && !exclItems.length ? '<em style="color:var(--ink-faint)">No specific commitments tracked.</em>' : ''}
+    </div>
+    <hr class="infobox-divider">
+    <span class="infobox-notes-label">Your notes</span>
+    <textarea class="infobox-notes" id="infobox-notes-area" placeholder="Add your own notes, observations, or references for this diagram…">${existingNote}</textarea>
+    <div class="infobox-save-row">
+      <button class="infobox-save" onclick="saveInfoNote()">Save notes</button>
+      <span class="infobox-saved-msg" id="infobox-saved-msg">Saved.</span>
+    </div>
+  `;
+
+  document.getElementById('infobox-overlay').classList.add('open');
+  document.getElementById('infobox-drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Focus textarea after transition
+  setTimeout(() => {
+    const ta = document.getElementById('infobox-notes-area');
+    if (ta) ta.focus();
+  }, 270);
+}
+
+function closeInfoBox() {
+  currentInfoKey = null;
+  document.getElementById('infobox-overlay').classList.remove('open');
+  document.getElementById('infobox-drawer').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function saveInfoNote() {
+  if (!currentInfoKey) return;
+  const ta = document.getElementById('infobox-notes-area');
+  if (!ta) return;
+  infoBoxNotes[currentInfoKey] = ta.value;
+  saveNotes();
+  const msg = document.getElementById('infobox-saved-msg');
+  if (msg) {
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 1800);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════════════
    BOOT
    ════════════════════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded', () => {
   render();
   runValidator();
+
+  document.getElementById('infobox-close').addEventListener('click', closeInfoBox);
+  document.getElementById('infobox-overlay').addEventListener('click', closeInfoBox);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && currentInfoKey) closeInfoBox();
+  });
 });
 </script>
 </body>
