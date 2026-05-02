@@ -68,6 +68,23 @@
     margin: 0;
     letter-spacing: -0.015em;
   }
+  header.masthead h1 .h1-ontology {
+    font-style: italic;
+    color: #0055dd;
+    cursor: pointer;
+    background: linear-gradient(160deg, #5599ff 0%, #0044cc 45%, #003399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-decoration: none;
+    border-bottom: 2.5px solid #0055dd;
+    padding-bottom: 1px;
+    padding-right: 6px;
+    transition: filter 150ms ease;
+  }
+  header.masthead h1 .h1-ontology:hover {
+    filter: brightness(1.25);
+  }
   header.masthead .subtitle {
     font-style: italic;
     color: var(--ink-soft);
@@ -379,69 +396,47 @@
     flex-direction: column;
     gap: 0;
   }
-  .ontology-card {
-    border-top: 1px solid var(--line-soft);
-    padding: 22px 0 24px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px 24px;
-    align-items: baseline;
-  }
-  .ontology-card:last-child { border-bottom: 1px solid var(--line-soft); }
-  .ontology-card .name {
-    font-family: var(--display);
-    font-weight: 700;
-    font-size: 26px;
-    letter-spacing: -0.005em;
-    color: var(--ink);
-    line-height: 1;
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 6px 0;
-  }
-  .ontology-card .name .pageno {
-    font-family: var(--mono);
-    font-weight: 400;
-    font-size: 13px;
-    color: var(--ink-faint);
-    margin-left: 12px;
-    letter-spacing: 0.04em;
-    vertical-align: middle;
-  }
-  .ontology-card .name .diagramlink {
-    font-family: var(--mono);
-    font-weight: 700;
-    font-size: 13px;
-    color: var(--link-blue);
-    margin-left: 14px;
-    letter-spacing: 0.04em;
-    text-decoration: none;
-    border-bottom: 1px solid transparent;
-    padding-bottom: 1px;
-    transition: border-color 120ms;
-    white-space: nowrap;
-  }
-  .ontology-card .name .diagramlink:hover {
-    border-bottom-color: var(--link-blue);
-  }
-  .ontology-card .name .year {
-    font-family: var(--mono);
-    font-weight: 400;
-    font-size: 14.2px;
-    color: var(--ink-faint);
-    margin-left: 8px;
-    font-style: normal;
-  }
-  .ontology-card .badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 5px;
-    justify-content: flex-end;
+  /* diagramlink now lives in badges column */
+  /* Right column spans both grid rows */
+  .ontology-card .card-right {
     grid-column: 2;
     grid-row: 1 / span 2;
-    align-content: flex-start;
-    max-width: 360px;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  /* ⓘ + view diagram, top-aligned */
+  .ontology-card .card-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+  /* Badges: one per line, right-aligned */
+  .ontology-card .badges-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .ontology-card .card-controls .diagramlink {
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--link-blue);
+    letter-spacing: 0.04em;
+    text-decoration: none;
+    border-bottom: 1px solid var(--link-blue);
+    padding-bottom: 1px;
+    transition: border-color 120ms, opacity 120ms;
+    white-space: nowrap;
+  }
+  .ontology-card .card-controls .diagramlink:hover {
+    opacity: 0.75;
   }
   .ontology-card .badge {
     border: 1px solid var(--line);
@@ -459,8 +454,37 @@
     border-style: dashed;
     color: var(--ink-soft);
   }
+  .ontology-card {
+    border-top: 1px solid var(--line-soft);
+    padding: 22px 0 24px;
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    column-gap: 24px;
+    row-gap: 8px;
+  }
+  .ontology-card:last-child { border-bottom: 1px solid var(--line-soft); }
+
+  .ontology-card .name {
+    grid-column: 1;
+    grid-row: 1;
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    line-height: 1.15;
+  }
+  .ontology-card .name .year {
+    font-family: var(--mono);
+    font-weight: 400;
+    font-size: 14.2px;
+    color: var(--ink-faint);
+    font-style: normal;
+    margin-left: 8px;
+  }
   .ontology-card .summary {
     grid-column: 1;
+    grid-row: 2;
     color: var(--ink-soft);
     font-size: 17.1px;
     line-height: 1.4;
@@ -716,6 +740,33 @@
   }
   .about-body em { color: var(--ink); }
 
+  /* Title-scale variant — sits next to the h1 */
+  .infobox-trigger--title {
+    width: 44px;
+    height: 44px;
+    font-size: 28px;
+    margin-left: 0;
+    flex-shrink: 0;
+    vertical-align: middle;
+    position: relative;
+    top: 0;
+    box-shadow:
+      0 6px 0 0 #e6a800,
+      0 8px 18px rgba(0, 20, 100, 0.4);
+  }
+  .infobox-trigger--title:hover {
+    box-shadow:
+      0 7px 0 0 #e6a800,
+      0 10px 22px rgba(0, 20, 100, 0.45);
+    top: -5px;
+  }
+  .infobox-trigger--title:active {
+    box-shadow:
+      0 2px 0 0 #e6a800,
+      0 3px 6px rgba(0, 20, 100, 0.3);
+    top: 0px;
+  }
+
   /* ────────────────────────────────────────────────────────────
      Info box — slide-in drawer anchored to the right of the page
      ─────────────────────────────────────────────────────────── */
@@ -912,7 +963,7 @@
 <div class="page">
 
 <header class="masthead">
-  <h1>Choose an ontology</h1>
+  <h1>Choose an <em class="h1-ontology" onclick="openAboutBox()" title="About Ontologies">ontology</em></h1>
   <div class="subtitle">Fourteen categorial schemes, faceted by stance, commitments, and tooling.</div>
 </header>
 
@@ -924,53 +975,6 @@
   or by what tooling exists for the formalised ones. Counts update live as you choose.
   The matching ontologies appear below; each opens its diagram in a new tab.</p>
 </div>
-
-<details class="about-section">
-  <summary>
-    <span class="about-title">About Ontologies</span>
-    <span class="about-chevron">&#9650;</span>
-  </summary>
-  <div class="about-body">
-    <p>An <em>ontology</em>, in the philosophical sense, is a theory of what exists &mdash; an
-    account of the fundamental categories of being. The word comes from the Greek
-    <em>ontos</em> (being) and <em>logos</em> (study). Where empirical sciences ask what
-    <em>kinds of things</em> inhabit a domain, ontology asks what kinds of things are even
-    <em>possible</em> &mdash; what basic types reality must contain in order for anything else
-    to be the case.</p>
-
-    <h3>Categorial schemes</h3>
-    <p>Every ontology in this collection is specifically a <em>categorial scheme</em>: a small
-    inventory of highest-level genera such as <em>substance</em>, <em>universal</em>,
-    <em>particular</em>, or <em>process</em>. The idea, inherited from Aristotle's
-    <em>Categories</em>, is that these genera are not reducible to one another and that every
-    other kind of thing belongs under at least one of them. Different schemes disagree sharply
-    on which categories to posit and on whether the scheme itself is mind-independent or
-    partly shaped by cognition.</p>
-
-    <h3>Three broad stances</h3>
-    <p><em>Mind-independent</em> ontologies (Plato, Aristotle, BFO, SUMO &hellip;) hold that
-    categories carve reality at its actual joints, independently of any knower.
-    <em>Mind-inclusive</em> ones (DOLCE, Husserl, Meinong &hellip;) accept intentional,
-    fictional, or social entities as full members of the ontology. <em>Representational</em>
-    schemes (EFO) treat the ontology as a structured representation useful for reasoning,
-    without strong commitments about what ultimately exists. Radical Constructivism
-    (Glasersfeld) is a meta-position that rejects all three framings.</p>
-
-    <h3>Formal vs. philosophical</h3>
-    <p>Since the early 2000s, several ontologies have been given machine-readable encodings in
-    OWL 2, Common Logic, or KIF &mdash; making them amenable to automated reasoning, data
-    integration, and semantic web applications. Philosophical schemes (Plato through Husserl)
-    remain purely textual; their categories must be interpreted and operationalised before they
-    can inform any formal system. The <em>Practical &amp; Tooling</em> filter column above
-    lets you restrict the list to schemes that have a working implementation.</p>
-
-    <h3>Reading the diagrams</h3>
-    <p>Each entry links to a diagram (PDF) that maps out the categorial architecture of the
-    scheme: how the top-level categories relate, which entities are admitted or excluded, and
-    where the principal commitments fall. Click <strong>ⓘ notes</strong> on any card to open
-    a side panel where you can record your own annotations for that diagram.</p>
-  </div>
-</details>
 
 <div class="activefilters" id="activefilters">
   <span class="label">Active filters:</span>
@@ -1580,14 +1584,16 @@ function makeCard(o) {
       allBadges.push({ text: tmDisplay });
     }
 
-    const badgeHtml = allBadges
-      .map(b => `<span class="badge${b.neg ? ' neg' : ''}">${b.text}</span>`).join('');
+    const badgesHtml = allBadges.map(b => `<span class="badge${b.neg ? ' neg' : ''}">${b.text}</span>`).join('');
 
     const commitments = summariseCommitments(o);
 
     card.innerHTML = `
-      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a></div>
-      <div class="badges"><button class="infobox-trigger" onclick="openInfoBox('${o.key}')" title="More about ${o.label}">i</button>${badgeHtml}</div>
+      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span></div>
+      <div class="card-right">
+        <div class="card-controls"><button class="infobox-trigger" onclick="openInfoBox('${o.key}')" title="More about ${o.label}">i</button><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a></div>
+        <div class="badges-stack">${badgesHtml}</div>
+      </div>
       <div class="summary">${commitments}</div>
     `;
     return card;
@@ -1859,6 +1865,61 @@ function openInfoBox(key) {
     <hr class="infobox-divider">
     <p class="infobox-section-title">Notes</p>
     <div class="infobox-notes-body">${notesHtml}</div>
+  `;
+
+  document.getElementById('infobox-overlay').classList.add('open');
+  document.getElementById('infobox-drawer').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function openAboutBox() {
+  currentInfoKey = '__about__';
+
+  document.getElementById('infobox-name').textContent = 'About Ontologies';
+  document.getElementById('infobox-year').textContent = '';
+
+  const body = document.getElementById('infobox-body');
+  body.innerHTML = `
+    <div class="infobox-notes-body" style="font-size:16px;line-height:1.75">
+      <p>An <em>ontology</em>, in the philosophical sense, is a theory of what exists — an
+      account of the fundamental categories of being. The word comes from the Greek
+      <em>ontos</em> (being) and <em>logos</em> (study). Where empirical sciences ask what
+      <em>kinds of things</em> inhabit a domain, ontology asks what kinds of things are even
+      <em>possible</em> — what basic types reality must contain in order for anything else
+      to be the case.</p>
+
+      <p class="infobox-section-title">Categorial schemes</p>
+      <p>Every ontology in this collection is specifically a <em>categorial scheme</em>: a small
+      inventory of highest-level genera such as <em>substance</em>, <em>universal</em>,
+      <em>particular</em>, or <em>process</em>. The idea, inherited from Aristotle's
+      <em>Categories</em>, is that these genera are not reducible to one another and that every
+      other kind of thing belongs under at least one of them. Different schemes disagree sharply
+      on which categories to posit and on whether the scheme itself is mind-independent or
+      partly shaped by cognition.</p>
+
+      <p class="infobox-section-title">Three broad stances</p>
+      <p><em>Mind-independent</em> ontologies (Plato, Aristotle, BFO, SUMO…) hold that
+      categories carve reality at its actual joints, independently of any knower.
+      <em>Mind-inclusive</em> ones (DOLCE, Husserl, Meinong…) accept intentional,
+      fictional, or social entities as full members of the ontology. <em>Representational</em>
+      schemes (EFO) treat the ontology as a structured representation useful for reasoning,
+      without strong commitments about what ultimately exists. Radical Constructivism
+      (Glasersfeld) is a meta-position that rejects all three framings.</p>
+
+      <p class="infobox-section-title">Formal vs. philosophical</p>
+      <p>Since the early 2000s, several ontologies have been given machine-readable encodings in
+      OWL 2, Common Logic, or KIF — making them amenable to automated reasoning, data
+      integration, and semantic web applications. Philosophical schemes (Plato through Husserl)
+      remain purely textual; their categories must be interpreted and operationalised before they
+      can inform any formal system. The <em>Practical &amp; Tooling</em> filter column lets you
+      restrict the list to schemes that have a working implementation.</p>
+
+      <p class="infobox-section-title">Reading the diagrams</p>
+      <p>Each entry links to a diagram (PDF) that maps out the categorial architecture of the
+      scheme: how the top-level categories relate, which entities are admitted or excluded, and
+      where the principal commitments fall. Click the <strong>ⓘ</strong> button on any card to
+      open a side panel with editorial notes for that diagram.</p>
+    </div>
   `;
 
   document.getElementById('infobox-overlay').classList.add('open');
