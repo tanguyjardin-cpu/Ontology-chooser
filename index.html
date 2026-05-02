@@ -735,33 +735,35 @@
     height: 28px;
     padding: 0;
     cursor: pointer;
-    margin-left: 12px;
+    margin-left: 0;
+    margin-bottom: 2px;
     white-space: nowrap;
     position: relative;
-    top: 2px;
+    top: 0;
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* 3D: light sky bezels against deep navy face — max contrast */
+    /* 3D: egg-yolk yellow bezels against deep navy face — hard contrast */
     box-shadow:
-      0 4px 0 0 #7ab0ff,
+      0 4px 0 0 #e6a800,
       0 6px 12px rgba(0, 20, 100, 0.4);
     transition: box-shadow 80ms ease, top 80ms ease, background 80ms ease;
     user-select: none;
+    top: 0;
   }
   .infobox-trigger:hover {
     background: #0d35b0;
     box-shadow:
-      0 5px 0 0 #7ab0ff,
+      0 5px 0 0 #e6a800,
       0 8px 16px rgba(0, 20, 100, 0.45);
-    top: 1px;
+    top: -1px;
   }
   .infobox-trigger:active {
     box-shadow:
-      0 1px 0 0 #7ab0ff,
+      0 1px 0 0 #e6a800,
       0 2px 5px rgba(0, 20, 100, 0.3);
-    top: 5px;
+    top: 3px;
   }
 
   /* Overlay */
@@ -1584,8 +1586,8 @@ function makeCard(o) {
     const commitments = summariseCommitments(o);
 
     card.innerHTML = `
-      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a><button class="infobox-trigger" onclick="openInfoBox('${o.key}')" title="More about ${o.label}">i</button></div>
-      <div class="badges">${badgeHtml}</div>
+      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a></div>
+      <div class="badges"><button class="infobox-trigger" onclick="openInfoBox('${o.key}')" title="More about ${o.label}">i</button>${badgeHtml}</div>
       <div class="summary">${commitments}</div>
     `;
     return card;
