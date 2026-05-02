@@ -720,35 +720,49 @@
      Info box — slide-in drawer anchored to the right of the page
      ─────────────────────────────────────────────────────────── */
 
-  /* Notes 3D button inside each card */
+  /* Notes button inside each card — editorial ghost pill */
   .infobox-trigger {
-    font-family: var(--display);
+    font-family: var(--serif);
     font-size: 13.5px;
-    font-weight: 700;
-    letter-spacing: 0.03em;
-    color: #0a0a0a;
-    background: #ffe600;
-    border: none;
-    border-radius: 5px;
-    padding: 4px 13px 5px;
+    font-style: italic;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 13px 4px;
     cursor: pointer;
     margin-left: 12px;
     white-space: nowrap;
-    box-shadow: 0 3px 0 #b8a800, 0 4px 6px rgba(0,0,0,0.18);
     position: relative;
     top: -1px;
-    transition: box-shadow 80ms, transform 80ms, top 80ms;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: background 150ms ease, color 150ms ease, border-color 150ms ease;
     user-select: none;
     flex-shrink: 0;
   }
+  .infobox-trigger::after {
+    content: '→';
+    font-style: normal;
+    font-size: 12px;
+    opacity: 0.5;
+    transition: opacity 150ms ease, transform 150ms ease;
+    display: inline-block;
+  }
   .infobox-trigger:hover {
-    background: #ffec2e;
-    box-shadow: 0 4px 0 #b8a800, 0 5px 8px rgba(0,0,0,0.2);
-    top: -2px;
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .infobox-trigger:hover::after {
+    opacity: 1;
+    transform: translateX(2px);
   }
   .infobox-trigger:active {
-    box-shadow: 0 1px 0 #b8a800, 0 1px 3px rgba(0,0,0,0.15);
-    top: 2px;
+    opacity: 0.75;
   }
 
   /* Overlay */
