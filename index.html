@@ -720,36 +720,48 @@
      Info box — slide-in drawer anchored to the right of the page
      ─────────────────────────────────────────────────────────── */
 
-  /* Notes button inside each card — bold 3D push button */
+  /* ⓘ Round 3D info button inside each card */
   .infobox-trigger {
-    font-family: var(--mono);
-    font-size: 12px;
+    font-family: var(--serif);
+    font-size: 17px;
     font-style: normal;
     font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--paper);
-    background: var(--ink);
+    line-height: 1;
+    color: #ffffff;
+    background: #0055dd;
     border: none;
-    border-radius: 5px;
-    padding: 4px 13px 5px;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    padding: 0;
     cursor: pointer;
     margin-left: 12px;
     white-space: nowrap;
     position: relative;
-    top: 0px;
-    box-shadow: 0 3px 0 0 #6b5f55, 0 3px 8px rgba(20,17,15,0.22);
-    transition: box-shadow 80ms ease, top 80ms ease;
-    user-select: none;
+    top: 2px;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    /* 3D: bottom shadow in a darker navy (not blue, not bg) */
+    box-shadow:
+      0 4px 0 0 #002a7a,
+      0 5px 10px rgba(0, 40, 120, 0.35);
+    transition: box-shadow 80ms ease, top 80ms ease, background 80ms ease;
+    user-select: none;
   }
   .infobox-trigger:hover {
-    box-shadow: 0 4px 0 0 #6b5f55, 0 5px 12px rgba(20,17,15,0.28);
-    top: -1px;
+    background: #0066ff;
+    box-shadow:
+      0 5px 0 0 #002a7a,
+      0 7px 14px rgba(0, 40, 120, 0.4);
+    top: 1px;
   }
   .infobox-trigger:active {
-    box-shadow: 0 1px 0 0 #6b5f55, 0 1px 3px rgba(20,17,15,0.15);
-    top: 2px;
+    box-shadow:
+      0 1px 0 0 #002a7a,
+      0 2px 4px rgba(0, 40, 120, 0.25);
+    top: 5px;
   }
 
   /* Overlay */
@@ -1572,7 +1584,7 @@ function makeCard(o) {
     const commitments = summariseCommitments(o);
 
     card.innerHTML = `
-      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a><button class="infobox-trigger" onclick="openInfoBox('${o.key}')" title="Open notes for ${o.label}">More</button></div>
+      <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a><button class="infobox-trigger" onclick="openInfoBox('${o.key}')" title="More about ${o.label}">i</button></div>
       <div class="badges">${badgeHtml}</div>
       <div class="summary">${commitments}</div>
     `;
