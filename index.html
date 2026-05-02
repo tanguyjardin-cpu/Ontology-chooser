@@ -985,7 +985,6 @@
     min-width: 0;
     display: flex;
     flex-direction: column;
-    border-right: 1.5px solid var(--line);
   }
   .diag-pdf-topbar {
     display: flex;
@@ -1010,16 +1009,43 @@
     color: var(--ink-faint);
     margin-left: 10px;
   }
-  .diag-pdf-topbar .diag-newtab {
+  /* Back button */
+  .diag-back {
     font-family: var(--mono);
     font-size: 12px;
-    color: var(--link-blue);
-    text-decoration: none;
-    border-bottom: 1px solid var(--link-blue);
+    color: var(--ink);
+    background: none;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    padding: 4px 14px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: all 120ms;
     white-space: nowrap;
     flex-shrink: 0;
   }
-  .diag-pdf-topbar .diag-newtab:hover { opacity: 0.75; }
+  .diag-back:hover { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* Toggle-panel button (shown when panel is hidden) */
+  .diag-show-panel {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--link-blue);
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--link-blue);
+    padding: 0 0 1px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: opacity 120ms;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: none; /* shown only when panel is collapsed */
+  }
+  .diag-show-panel:hover { opacity: 0.7; }
+  .diag-shell.panel-hidden .diag-show-panel { display: inline; }
+  .diag-shell.panel-hidden .diag-pdf { border-right: none; }
+
   .diag-pdf iframe {
     flex: 1;
     width: 100%;
@@ -1036,7 +1062,17 @@
     flex-direction: column;
     overflow: hidden;
     background: var(--paper);
+    border-left: 1.5px solid var(--line);
+    transition: width 220ms cubic-bezier(0.22,1,0.36,1),
+                opacity 180ms ease;
   }
+  .diag-shell.panel-hidden .diag-table-pane {
+    width: 0;
+    opacity: 0;
+    pointer-events: none;
+    border-left: none;
+  }
+
   .diag-table-header {
     padding: 10px 16px 8px;
     border-bottom: 1px solid var(--line-soft);
@@ -1053,7 +1089,7 @@
     text-transform: uppercase;
     color: var(--ink-faint);
   }
-  .diag-close {
+  .diag-close-panel {
     background: none;
     border: 1px solid var(--line-soft);
     border-radius: 999px;
@@ -1067,8 +1103,9 @@
     justify-content: center;
     transition: all 120ms;
     flex-shrink: 0;
+    title: "Hide features panel";
   }
-  .diag-close:hover { background: var(--ink); color: var(--paper); }
+  .diag-close-panel:hover { background: var(--ink); color: var(--paper); }
 
   .diag-table-scroll {
     flex: 1;
@@ -1135,7 +1172,8 @@
   @media (max-width: 720px) {
     .diag-shell { flex-direction: column; }
     .diag-pdf { border-right: none; border-bottom: 1.5px solid var(--line); flex: 0 0 50vh; }
-    .diag-table-pane { width: 100%; flex: 1; }
+    .diag-table-pane { width: 100%; flex: 1; border-left: none; border-top: 1.5px solid var(--line); }
+    .diag-shell.panel-hidden .diag-table-pane { width: 100%; height: 0; }
   }
 </style>
 </head>
@@ -1189,23 +1227,26 @@
   <ul id="validator-output"></ul>
 </details>
 
-<!-- Diagram overlay: full-screen PDF + feature table -->
+<!-- Diagram overlay: full-screen PDF + collapsible feature table -->
 <div class="diag-overlay" id="diag-overlay">
-  <div class="diag-shell">
+  <div class="diag-shell" id="diag-shell">
     <div class="diag-pdf">
       <div class="diag-pdf-topbar">
         <div>
           <span class="diag-title" id="diag-title"></span>
           <span class="diag-year" id="diag-year"></span>
         </div>
-        <a class="diag-newtab" id="diag-newtab" href="#" target="_blank" rel="noopener">open in new tab &rarr;</a>
+        <div style="display:flex;align-items:center;gap:16px;flex-shrink:0">
+          <button class="diag-show-panel" id="diag-show-panel" onclick="toggleDiagPanel()">show features &rarr;</button>
+          <button class="diag-back" id="diag-back" onclick="closeDiagram()">&larr; back</button>
+        </div>
       </div>
       <iframe id="diag-iframe" title="Ontology diagram"></iframe>
     </div>
     <div class="diag-table-pane">
       <div class="diag-table-header">
         <span class="diag-features-label">Features</span>
-        <button class="diag-close" id="diag-close" aria-label="Close">&times;</button>
+        <button class="diag-close-panel" id="diag-close-panel" aria-label="Hide features panel" title="Hide features panel" onclick="toggleDiagPanel()">&times;</button>
       </div>
       <div class="diag-table-scroll" id="diag-table-scroll"></div>
     </div>
@@ -2139,7 +2180,7 @@ function closeInfoBox() {
 }
 
 /* ════════════════════════════════════════════════════════════════════
-   DIAGRAM OVERLAY — full-screen PDF + feature table
+   DIAGRAM OVERLAY — full-screen PDF + collapsible feature table
    ════════════════════════════════════════════════════════════════════ */
 
 function openDiagram(key) {
@@ -2149,8 +2190,10 @@ function openDiagram(key) {
 
   document.getElementById('diag-title').textContent = o.label;
   document.getElementById('diag-year').textContent = formatYear(o.publication_year);
-  document.getElementById('diag-newtab').href = pdfUrl;
   document.getElementById('diag-iframe').src = pdfUrl;
+
+  // Always start with panel visible
+  document.getElementById('diag-shell').classList.remove('panel-hidden');
 
   buildFeatureTable(o);
 
@@ -2162,6 +2205,10 @@ function closeDiagram() {
   document.getElementById('diag-overlay').classList.remove('open');
   document.getElementById('diag-iframe').src = '';
   document.body.style.overflow = '';
+}
+
+function toggleDiagPanel() {
+  document.getElementById('diag-shell').classList.toggle('panel-hidden');
 }
 
 function buildFeatureTable(o) {
@@ -2214,7 +2261,6 @@ function buildFeatureTable(o) {
         const isBleak = !val || val === 'none' || val === 'philosophical' || val === 'n/a';
         scroll.appendChild(mkRow(facet.label, isBleak ? 'no' : 'info', val || '—'));
       } else {
-        // multi-OR / list (encoding_format, licensing)
         const vals = Array.isArray(raw) ? raw.map(clean) : [clean(raw)];
         const meaningful = vals.filter(v => v && v !== 'none' && v !== 'n/a');
         const uncertain = Array.isArray(raw)
@@ -2261,8 +2307,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('infobox-close').addEventListener('click', closeInfoBox);
   document.getElementById('infobox-overlay').addEventListener('click', closeInfoBox);
-
-  document.getElementById('diag-close').addEventListener('click', closeDiagram);
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
