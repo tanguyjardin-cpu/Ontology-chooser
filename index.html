@@ -430,8 +430,11 @@
     color: var(--link-blue);
     letter-spacing: 0.04em;
     text-decoration: none;
+    background: none;
+    border: none;
     border-bottom: 1px solid var(--link-blue);
-    padding-bottom: 1px;
+    padding: 0 0 1px;
+    cursor: pointer;
     transition: border-color 120ms, opacity 120ms;
     white-space: nowrap;
   }
@@ -956,6 +959,184 @@
     border-top: 1px solid var(--line-soft);
     margin: 20px 0;
   }
+
+  /* ────────────────────────────────────────────────────────────
+     Diagram overlay — full-screen, PDF left + feature table right
+     ─────────────────────────────────────────────────────────── */
+  .diag-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+  }
+  .diag-overlay.open { display: flex; align-items: stretch; }
+
+  .diag-shell {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    background: var(--paper);
+  }
+
+  /* PDF pane */
+  .diag-pdf {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1.5px solid var(--line);
+  }
+  .diag-pdf-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    flex-shrink: 0;
+    gap: 12px;
+    background: var(--paper);
+  }
+  .diag-pdf-topbar .diag-title {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+  .diag-pdf-topbar .diag-year {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-left: 10px;
+  }
+  .diag-pdf-topbar .diag-newtab {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--link-blue);
+    text-decoration: none;
+    border-bottom: 1px solid var(--link-blue);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .diag-pdf-topbar .diag-newtab:hover { opacity: 0.75; }
+  .diag-pdf iframe {
+    flex: 1;
+    width: 100%;
+    border: none;
+    display: block;
+    min-height: 0;
+  }
+
+  /* Feature table pane */
+  .diag-table-pane {
+    width: 340px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--paper);
+  }
+  .diag-table-header {
+    padding: 10px 16px 8px;
+    border-bottom: 1px solid var(--line-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    gap: 8px;
+  }
+  .diag-table-header .diag-features-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .diag-close {
+    background: none;
+    border: 1px solid var(--line-soft);
+    border-radius: 999px;
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    font-size: 17px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 120ms;
+    flex-shrink: 0;
+  }
+  .diag-close:hover { background: var(--ink); color: var(--paper); }
+
+  .diag-table-scroll {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 0 0 24px;
+  }
+  .diag-table-scroll::-webkit-scrollbar { width: 5px; }
+  .diag-table-scroll::-webkit-scrollbar-track { background: transparent; }
+  .diag-table-scroll::-webkit-scrollbar-thumb { background: var(--line-soft); border-radius: 3px; }
+
+  .diag-section-title {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.13em;
+    color: var(--ink);
+    padding: 12px 16px 5px;
+    border-bottom: 1.5px solid var(--line);
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    z-index: 1;
+  }
+
+  .diag-feature-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    font-size: 14px;
+    line-height: 1.3;
+  }
+  .diag-feature-row:last-child { border-bottom: none; }
+  .diag-feature-row .feat-name {
+    font-family: var(--serif);
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+  .diag-feature-row .feat-val {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-style: normal;
+    white-space: nowrap;
+    text-align: right;
+    min-width: 32px;
+  }
+  .diag-feature-row .feat-val.yes  { color: #2a7a2a; font-weight: 700; }
+  .diag-feature-row .feat-val.no   { color: var(--accent); font-weight: 700; }
+  .diag-feature-row .feat-val.na   { color: var(--ink-faint); font-style: italic; font-weight: 400; }
+  .diag-feature-row .feat-val.info { color: var(--ink); font-weight: 400; font-size: 12px; }
+
+  .diag-meta-note {
+    padding: 8px 16px;
+    font-size: 13px;
+    font-style: italic;
+    color: var(--ink-faint);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 720px) {
+    .diag-shell { flex-direction: column; }
+    .diag-pdf { border-right: none; border-bottom: 1.5px solid var(--line); flex: 0 0 50vh; }
+    .diag-table-pane { width: 100%; flex: 1; }
+  }
 </style>
 </head>
 
@@ -1007,6 +1188,29 @@
   <summary>Data validator (consistency checks)</summary>
   <ul id="validator-output"></ul>
 </details>
+
+<!-- Diagram overlay: full-screen PDF + feature table -->
+<div class="diag-overlay" id="diag-overlay">
+  <div class="diag-shell">
+    <div class="diag-pdf">
+      <div class="diag-pdf-topbar">
+        <div>
+          <span class="diag-title" id="diag-title"></span>
+          <span class="diag-year" id="diag-year"></span>
+        </div>
+        <a class="diag-newtab" id="diag-newtab" href="#" target="_blank" rel="noopener">open in new tab &rarr;</a>
+      </div>
+      <iframe id="diag-iframe" title="Ontology diagram"></iframe>
+    </div>
+    <div class="diag-table-pane">
+      <div class="diag-table-header">
+        <span class="diag-features-label">Features</span>
+        <button class="diag-close" id="diag-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="diag-table-scroll" id="diag-table-scroll"></div>
+    </div>
+  </div>
+</div>
 
 <!-- Info box overlay + drawer -->
 <div class="infobox-overlay" id="infobox-overlay"></div>
@@ -1591,7 +1795,7 @@ function makeCard(o) {
     card.innerHTML = `
       <div class="name">${o.label}<span class="year">${formatYear(o.publication_year)}</span></div>
       <div class="card-right">
-        <div class="card-controls"><button class="infobox-trigger" onclick="openInfoBox('${o.key}')" title="More about ${o.label}">i</button><a class="diagramlink" href="diagrams/diagram-${o.key}.pdf" target="_blank" rel="noopener" title="Open the diagram for ${o.label} in a new tab">view&nbsp;diagram&nbsp;&rarr;</a></div>
+        <div class="card-controls"><button class="infobox-trigger" onclick="openInfoBox('${o.key}')" title="More about ${o.label}">i</button><button class="diagramlink" onclick="openDiagram('${o.key}')" title="View diagram for ${o.label}">view&nbsp;diagram&nbsp;&rarr;</button></div>
         <div class="badges-stack">${badgesHtml}</div>
       </div>
       <div class="summary">${commitments}</div>
@@ -1935,6 +2139,119 @@ function closeInfoBox() {
 }
 
 /* ════════════════════════════════════════════════════════════════════
+   DIAGRAM OVERLAY — full-screen PDF + feature table
+   ════════════════════════════════════════════════════════════════════ */
+
+function openDiagram(key) {
+  const o = DATA.ontologies[key];
+  if (!o) return;
+  const pdfUrl = 'diagrams/diagram-' + key + '.pdf';
+
+  document.getElementById('diag-title').textContent = o.label;
+  document.getElementById('diag-year').textContent = formatYear(o.publication_year);
+  document.getElementById('diag-newtab').href = pdfUrl;
+  document.getElementById('diag-iframe').src = pdfUrl;
+
+  buildFeatureTable(o);
+
+  document.getElementById('diag-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeDiagram() {
+  document.getElementById('diag-overlay').classList.remove('open');
+  document.getElementById('diag-iframe').src = '';
+  document.body.style.overflow = '';
+}
+
+function buildFeatureTable(o) {
+  const scroll = document.getElementById('diag-table-scroll');
+  scroll.innerHTML = '';
+
+  /* ── Section 1: Stance & Profile ── */
+  scroll.appendChild(mkSectionTitle('Stance & Profile'));
+  for (const desc of LAYER1_DESCRIPTORS) {
+    const has = desc.test(o);
+    scroll.appendChild(mkRow(desc.label, has ? 'yes' : 'no', has ? '✓' : '✗'));
+  }
+
+  /* ── Section 2: Categorial Commitments ── */
+  scroll.appendChild(mkSectionTitle('Categorial Commitments'));
+  if (o.layer2 && o.layer2._note) {
+    scroll.appendChild(mkNote('Meta-position — categorial questions do not apply.'));
+  } else {
+    const labels = Object.fromEntries(LAYER2_DESCRIPTORS);
+    for (const [k] of LAYER2_DESCRIPTORS) {
+      const raw = o.layer2[k];
+      if (raw === null || raw === undefined) {
+        scroll.appendChild(mkRow(labels[k], 'na', '—'));
+      } else {
+        const v = clean(raw);
+        const uncertain = typeof raw === 'string' && raw.endsWith('?');
+        if (v === 'admits') {
+          scroll.appendChild(mkRow(labels[k], 'yes', uncertain ? '✓?' : '✓'));
+        } else {
+          scroll.appendChild(mkRow(labels[k], 'no', uncertain ? '✗?' : '✗'));
+        }
+      }
+    }
+  }
+
+  /* ── Section 3: Practical Tooling ── */
+  scroll.appendChild(mkSectionTitle('Practical Tooling'));
+  const hasEncoding = o.layer1.encoding_present === true;
+  if (!hasEncoding) {
+    scroll.appendChild(mkRow('Encoding format', 'no', 'none'));
+    scroll.appendChild(mkNote('No formal encoding — remaining tooling features not applicable.'));
+  } else {
+    for (const facet of LAYER3_FACETS) {
+      const raw = o.layer3[facet.key];
+      if (facet.type === 'binary') {
+        const has = raw === true;
+        scroll.appendChild(mkRow(facet.label, has ? 'yes' : 'no', has ? '✓' : '✗'));
+      } else if (facet.type === 'min-rank') {
+        const val = clean(raw);
+        const isBleak = !val || val === 'none' || val === 'philosophical' || val === 'n/a';
+        scroll.appendChild(mkRow(facet.label, isBleak ? 'no' : 'info', val || '—'));
+      } else {
+        // multi-OR / list (encoding_format, licensing)
+        const vals = Array.isArray(raw) ? raw.map(clean) : [clean(raw)];
+        const meaningful = vals.filter(v => v && v !== 'none' && v !== 'n/a');
+        const uncertain = Array.isArray(raw)
+          ? raw.some(v => typeof v === 'string' && v.endsWith('?'))
+          : (typeof raw === 'string' && raw.endsWith('?'));
+        if (meaningful.length === 0) {
+          scroll.appendChild(mkRow(facet.label, 'no', 'none' + (uncertain ? '?' : '')));
+        } else {
+          scroll.appendChild(mkRow(facet.label, 'info', meaningful.join(', ') + (uncertain ? '?' : '')));
+        }
+      }
+    }
+  }
+}
+
+function mkSectionTitle(text) {
+  const el = document.createElement('div');
+  el.className = 'diag-section-title';
+  el.textContent = text;
+  return el;
+}
+
+function mkRow(name, valClass, valText) {
+  const row = document.createElement('div');
+  row.className = 'diag-feature-row';
+  row.innerHTML = '<span class="feat-name">' + name + '</span><span class="feat-val ' + valClass + '">' + valText + '</span>';
+  return row;
+}
+
+function mkNote(text) {
+  const el = document.createElement('div');
+  el.className = 'diag-meta-note';
+  el.textContent = text;
+  return el;
+}
+
+/* ════════════════════════════════════════════════════════════════════
    BOOT
    ════════════════════════════════════════════════════════════════════ */
 
@@ -1944,8 +2261,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('infobox-close').addEventListener('click', closeInfoBox);
   document.getElementById('infobox-overlay').addEventListener('click', closeInfoBox);
+
+  document.getElementById('diag-close').addEventListener('click', closeDiagram);
+
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && currentInfoKey) closeInfoBox();
+    if (e.key === 'Escape') {
+      if (document.getElementById('diag-overlay').classList.contains('open')) closeDiagram();
+      else if (currentInfoKey) closeInfoBox();
+    }
   });
 
   // Inject the current deployed commit SHA from the GitHub API
