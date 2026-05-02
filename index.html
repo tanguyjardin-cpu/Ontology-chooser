@@ -722,13 +722,13 @@
 
   /* ⓘ Round 3D info button inside each card */
   .infobox-trigger {
-    font-family: var(--serif);
-    font-size: 17px;
-    font-style: normal;
+    font-family: 'Georgia', 'Hoefler Text', 'Times New Roman', serif;
+    font-size: 18px;
+    font-style: italic;
     font-weight: 700;
     line-height: 1;
-    color: #ffffff;
-    background: #0055dd;
+    color: #e8f0ff;
+    background: #0a2a8c;
     border: none;
     border-radius: 50%;
     width: 28px;
@@ -743,24 +743,24 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* 3D: bottom shadow in a darker navy (not blue, not bg) */
+    /* 3D: light sky bezels against deep navy face — max contrast */
     box-shadow:
-      0 4px 0 0 #002a7a,
-      0 5px 10px rgba(0, 40, 120, 0.35);
+      0 4px 0 0 #7ab0ff,
+      0 6px 12px rgba(0, 20, 100, 0.4);
     transition: box-shadow 80ms ease, top 80ms ease, background 80ms ease;
     user-select: none;
   }
   .infobox-trigger:hover {
-    background: #0066ff;
+    background: #0d35b0;
     box-shadow:
-      0 5px 0 0 #002a7a,
-      0 7px 14px rgba(0, 40, 120, 0.4);
+      0 5px 0 0 #7ab0ff,
+      0 8px 16px rgba(0, 20, 100, 0.45);
     top: 1px;
   }
   .infobox-trigger:active {
     box-shadow:
-      0 1px 0 0 #002a7a,
-      0 2px 4px rgba(0, 40, 120, 0.25);
+      0 1px 0 0 #7ab0ff,
+      0 2px 5px rgba(0, 20, 100, 0.3);
     top: 5px;
   }
 
